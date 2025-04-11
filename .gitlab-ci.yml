@@ -1,0 +1,22 @@
+stages: 
+  - pre-build
+
+include: 
+- project: 'D00000-Toolbox/ci_cd-templates/node-js-project'
+  ref: release/node-20
+  file: 'dependency-track.yml'
+
+variables:
+   GIT_SSL_NO_VERIFY: "true"
+   GIT_STRATEGY: clone
+
+upload-sbom:
+   extends: 
+      - .upload_sbom
+   stage: pre-build
+   tags:
+      - sonarqube
+   before_script:
+      - !reference [.upload_sbom, before_script]
+   only:
+      - main
