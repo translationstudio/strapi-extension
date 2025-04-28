@@ -12,7 +12,7 @@
   "type": "commonjs",
   "repository": {
     "type": "git",
-    "url": "hthttps://github.com/translationstudio/strapi-extension.git"
+    "url": "https://github.com/translationstudio/strapi-extension.git"
   },
   "exports": {
     "./package.json": "./package.json",
