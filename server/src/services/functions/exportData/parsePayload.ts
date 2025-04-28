@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-import { ExportPayload } from "../../../../../translationstudio/Types";
+import { ExportPayload } from "../../../../../Types";
 
 const parsePayload = (payload: ExportPayload) => {
   const [contentTypeID, entryID] = payload.element.includes("#")

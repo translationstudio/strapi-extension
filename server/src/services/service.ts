@@ -22,7 +22,7 @@ import type {
   LocaleMap,
   StrapiLocale,
   TranslationRequest,
-} from "../../../translationstudio/Types";
+} from "../../../Types";
 import getContentType from "./functions/exportData/getContentType";
 import parsePayload from "./functions/exportData/parsePayload";
 import getEntry from "./functions/exportData/getEntry";

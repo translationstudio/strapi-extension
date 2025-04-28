@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-import { TranslationstudioTranslatable } from "../../../../../translationstudio/Types";
+import { TranslationstudioTranslatable } from "../../../../../Types";
 import htmlToJson from "./htmlToJson";
 
 export function transformFieldsToData(fields: TranslationstudioTranslatable[]) {

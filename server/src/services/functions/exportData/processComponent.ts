@@ -18,7 +18,7 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 import {
   TranslationstudioTranslatable,
   FieldSchema,
-} from "../../../../../translationstudio/Types";
+} from "../../../../../Types";
 import jsonToHtml from "./jsonToHtml";
 
 const processComponent = async (

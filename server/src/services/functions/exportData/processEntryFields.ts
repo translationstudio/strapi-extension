@@ -108,7 +108,7 @@ const processEntryFields = async (entry: any, schema: any, locale: string) => {
     if (!fieldSchema) continue;
 
     if (isDynamicZone(fieldSchema, value, schema)) {
-      const zoneFields = await processDynamicZone(key, value, schema);
+      const zoneFields = await processDynamicZone(key, value as any[], schema);
       contentFields.push(...zoneFields);
       continue;
     }
