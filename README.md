@@ -27,3 +27,9 @@ Follow these steps:
 5. run `npx yalc add --link _translationstudio-strapi-extension_`
 6. start strapi in development mode
 
+### Publish package update
+
+1. Update version number
+2. run `npm run build`
+3. run `npm publish --access public`
+
