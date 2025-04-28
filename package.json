@@ -6,6 +6,10 @@
   "version": "1.0.0",
   "keywords": ["translationstudio", "strapi", "translation"],
   "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "hthttps://github.com/translationstudio/strapi-extension.git"
+  },
   "exports": {
     "./package.json": "./package.json",
     "./strapi-admin": {
