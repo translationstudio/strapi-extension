@@ -3,7 +3,8 @@
   "description": "translationstudio extension for strapi",
   "license": "GPL-2.0-only",
   "author": "Duncan Leininger <duncan.leininger@idmedia.com>",
-  "version": "1.0.1",
+  "homepage": "https://translationstudio.tech",
+  "version": "1.0.2",
   "keywords": [
     "translationstudio",
     "strapi",

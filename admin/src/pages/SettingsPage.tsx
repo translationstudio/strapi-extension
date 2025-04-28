@@ -35,15 +35,25 @@ const SettingsPage = () => {
   const { get, post } = getFetchClient();
 
   useEffect(() => {
-    const getLicense = async () => {
+    const getLicense = async () => 
+    {
       setIsLoading(true);
-      const response = await get('/translationstudio/getLicense');
-      if (response.data.license) {
-        setLicenseValue(response.data.license);
-      } else {
-        setLicenseValue('');
+      try
+      {
+        const response = await get('/translationstudio-strapi-extension/getLicense');
+        if (response.data.license) {
+          setLicenseValue(response.data.license);
+        } else {
+          setLicenseValue('');
+        }
       }
-      setIsLoading(false);
+      catch (err)
+      {
+        console.error(err);
+      }
+      finally {
+        setIsLoading(false);
+      }
     };
     getLicense();
   }, []);
@@ -51,13 +61,21 @@ const SettingsPage = () => {
   useEffect(() => {
     const fetchToken = async () => {
       setIsLoadingToken(true);
-      const response = await get('/translationstudio/getToken');
-      if (response.data.token) {
-        setTokenValue(response.data.token);
-      } else {
-        setTokenValue('');
+      try{
+        const response = await get('/translationstudio-strapi-extension/getToken');
+        if (response.data.token) {
+          setTokenValue(response.data.token);
+        } else {
+          setTokenValue('');
+        }
       }
-      setIsLoadingToken(false);
+      catch (err)
+      {
+        console.error(err);
+      }
+      finally {
+        setIsLoadingToken(false);
+      }
     };
     fetchToken();
   }, []);
@@ -67,12 +85,21 @@ const SettingsPage = () => {
   };
 
   const handleSaveLicense = async () => {
-    const response = await post('/translationstudio/setLicense', { license: licenseValue });
-    if (response) {
-      displayAlert('success');
-    } else {
-      displayAlert('danger');
+    
+    try
+    {
+      const response = await post('/translationstudio-strapi-extension/setLicense', { license: licenseValue });
+      if (response) {
+        displayAlert('success');
+        return;
+      }
+    } 
+    catch (err)
+    {
+      console.error(err);
     }
+
+    displayAlert('danger');
   };
 
   const displayAlert = (variant: 'success' | 'danger') => {
@@ -87,9 +114,18 @@ const SettingsPage = () => {
 
   const handleGenerateToken = async () => {
     setIsLoadingToken(true);
-    const response = await post('/translationstudio/generateToken');
-    if (response.data?.token) {
-      setTokenValue(response.data.token);
+    try
+    {
+      const response = await post('/translationstudio-strapi-extension/generateToken');
+      if (response.data?.token) {
+        setTokenValue(response.data.token);
+      }
+    }
+    catch (err)
+    {
+      console.error(err);
+    }
+    finally {
       setIsLoadingToken(false);
     }
   };
