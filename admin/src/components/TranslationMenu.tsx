@@ -53,6 +53,7 @@ const TranslationMenu = () => {
   const context = useContentManagerContext();
   const { id, contentType, model } = context || {};
   const isCollectionType = contentType?.kind === 'collectionType';
+  const [licenseValid, setLicenseValid] = useState<boolean | null>(null);
 
   const selectedLang = Array.isArray(languages)
     ? languages.find((lang) => lang.name === selectedOption)
@@ -74,7 +75,19 @@ const TranslationMenu = () => {
 
   useEffect(() => {
     fetchEmail();
+    checkLicense();
   }, []);
+
+  async function checkLicense() {
+    try {
+      const response = await get('/translationstudio-strapi-extension/getLicense');
+      setLicenseValid(!!response.data.license);
+    }
+    catch (error) {
+      console.error(error);
+      setLicenseValid(false);
+    }
+  }
 
   useEffect(() => {
     if (!model || (!id && isCollectionType)) return;
@@ -256,91 +269,107 @@ const TranslationMenu = () => {
           </Flex>
         </Box>
 
-        <Box paddingBottom={4}>
-          {languages.length > 0 && (
-            <Radio.Group
-              onValueChange={handleRadioSelection}
-              name="languages"
-              aria-label="translationstudio settings"
-            >
-              <Typography variant="beta" tag="label" id="Sprachauswahl">
-                translationstudio settings
-              </Typography>
-              {languages.map((lang) => (
-                <Radio.Item key={lang.id} value={lang.name}>
-                  {lang['name']}
-                </Radio.Item>
-              ))}
-            </Radio.Group>
-          )}
-        </Box>
-
-        {!isMachineTranslation && (
+        {licenseValid === false ? (
+          <Box paddingBottom={4}>
+            <Typography style={{ color: 'white' }}>
+              Your translationstudio license is invalid. Please update your{' '}
+              <a href="/settings/translationstudio" style={{ color: 'white', textDecoration: 'underline' }}>
+                strapi configuration
+              </a>.
+            </Typography>
+          </Box>
+        ) : languages.length === 0 ? (
+          <Box paddingBottom={4}>
+            <Typography style={{ color: 'white' }}>
+              translationstudio has not been configured yet. Please add translation settings first.
+            </Typography>
+          </Box>
+        ) : (
           <>
-            <Box paddingBottom={4} paddingTop={4} style={{ color: 'white' }}>
-              <Typography variant="beta" tag="label" paddingBottom={4}>
-                Translation request
-              </Typography>
+            <Box paddingBottom={4}>
+              <Radio.Group
+                onValueChange={handleRadioSelection}
+                name="languages"
+                aria-label="translationstudio settings"
+              >
+                <Typography variant="beta" tag="label" id="Sprachauswahl">
+                  translationstudio settings
+                </Typography>
+                {languages.map((lang) => (
+                  <Radio.Item key={lang.id} value={lang.name}>
+                    {lang['name']}
+                  </Radio.Item>
+                ))}
+              </Radio.Group>
             </Box>
 
-            <Box paddingBottom={4} style={{ color: 'white' }}>
-              <Checkbox
-                onCheckedChange={handleUrgentChange}
-                defaultChecked={isUrgent}
-                style={{ color: 'white' }}
-              >
-                <Typography style={{ color: 'white' }}>
-                  translate immediately (and ignore quotes)
-                </Typography>
-              </Checkbox>
-            </Box>
-            <Box paddingBottom={4} style={{ color: 'white' }}>
-              <Checkbox
-                onCheckedChange={handleEmailChange}
-                defaultChecked={isEmail}
-                style={{ color: 'white' }}
-              >
-                <Typography style={{ color: 'white' }}>
-                  Send email notifications on translation status updates
-                </Typography>
-              </Checkbox>
-            </Box>
-
-            {!isUrgent ? (
-              <Box paddingBottom={8} paddingTop={4}>
-                <Box paddingBottom={4}>
-                  <Typography variant="beta">Due Date</Typography>
+            {!isMachineTranslation && (
+              <>
+                <Box paddingBottom={4} paddingTop={4} style={{ color: 'white' }}>
+                  <Typography variant="beta" tag="label" paddingBottom={4}>
+                    Translation request
+                  </Typography>
                 </Box>
-                <DatePicker
-                  onChange={handleDueDateChange}
-                  selecteddate={dueDate ? new Date(dueDate) : null}
-                />
-              </Box>
-            ) : null}
+
+                <Box paddingBottom={4} style={{ color: 'white' }}>
+                  <Checkbox
+                    onCheckedChange={handleUrgentChange}
+                    defaultChecked={isUrgent}
+                    style={{ color: 'white' }}
+                  >
+                    <Typography style={{ color: 'white' }}>
+                      translate immediately (and ignore quotes)
+                    </Typography>
+                  </Checkbox>
+                </Box>
+                <Box paddingBottom={4} style={{ color: 'white' }}>
+                  <Checkbox
+                    onCheckedChange={handleEmailChange}
+                    defaultChecked={isEmail}
+                    style={{ color: 'white' }}
+                  >
+                    <Typography style={{ color: 'white' }}>
+                      Send email notifications on translation status updates
+                    </Typography>
+                  </Checkbox>
+                </Box>
+
+                {!isUrgent ? (
+                  <Box paddingBottom={8} paddingTop={4}>
+                    <Box paddingBottom={4}>
+                      <Typography variant="beta">Due Date</Typography>
+                    </Box>
+                    <DatePicker
+                      onChange={handleDueDateChange}
+                      selecteddate={dueDate ? new Date(dueDate) : null}
+                    />
+                  </Box>
+                ) : null}
+              </>
+            )}
+
+            <Button
+              fullWidth
+              onClick={handleTranslationRequest}
+              disabled={!selectedOption}
+              startIcon={
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" fill="currentColor" />
+                </svg>
+              }
+            >
+              {isUrgent || isMachineTranslation ? 'Translate' : 'Request translation'}
+            </Button>
           </>
         )}
-
-        <Button
-          fullWidth
-          onClick={handleTranslationRequest}
-          disabled={!selectedOption}
-          startIcon={
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" fill="currentColor" />
-            </svg>
-          }
-        >
-          {isUrgent || isMachineTranslation ? 'Translate' : 'Request translation'}
-        </Button>
       </Box>
     </>
   );
-};
 
 export default TranslationMenu;
