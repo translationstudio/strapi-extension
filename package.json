@@ -1,10 +1,14 @@
 {
-  "name": "translationstudio-strapi-extension",
+  "name": "@translationstudio/translationstudio-strapi-extension",
   "description": "translationstudio extension for strapi",
   "license": "GPL-2.0-only",
   "author": "Duncan Leininger <duncan.leininger@idmedia.com>",
   "version": "1.0.0",
-  "keywords": ["translationstudio", "strapi", "translation"],
+  "keywords": [
+    "translationstudio",
+    "strapi",
+    "translation"
+  ],
   "type": "commonjs",
   "repository": {
     "type": "git",
