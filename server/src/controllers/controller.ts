@@ -17,6 +17,8 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 */
 import type { Core } from '@strapi/strapi';
 
+const APP_NAME = "translationstudio-strapi-extension";
+
 const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
   async validateToken(ctx) {
     const authHeader = ctx.request.header.authorization;
@@ -25,7 +27,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       ctx.body = { error: 'Missing authorization header' };
       return false;
     }
-    const storedToken = await strapi.plugin('translationstudio-strapi-extension').service('service').getToken();
+    const storedToken = await strapi.plugin(APP_NAME).service('service').getToken();
     if (!storedToken?.token || authHeader !== storedToken.token) {
       ctx.status = 401;
       ctx.body = { error: 'Invalid token' };
@@ -34,7 +36,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     return true;
   },
   async getLicense(ctx) {
-    const result = await strapi.plugin('translationstudio-strapi-extension').service('service').getLicense();
+    const result = await strapi.plugin(APP_NAME).service('service').getLicense();
     if (result.license) {
       ctx.status = 200;
     } else {
@@ -44,7 +46,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
   },
   async setLicense(ctx) {
     const license = ctx.request.body.license;
-    const result = await strapi.plugin('translationstudio-strapi-extension').service('service').setLicense(license);
+    const result = await strapi.plugin(APP_NAME).service('service').setLicense(license);
     if (result.success) {
       ctx.status = 200;
     } else {
@@ -53,7 +55,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     ctx.body = result;
   },
   async getToken(ctx) {
-    const result = await strapi.plugin('translationstudio-strapi-extension').service('service').getToken();
+    const result = await strapi.plugin(APP_NAME).service('service').getToken();
     if (result.token) {
       ctx.status = 200;
     } else {
@@ -62,19 +64,19 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     ctx.body = result;
   },
   async generateToken(ctx) {
-    const result = await strapi.plugin('translationstudio-strapi-extension').service('service').generateToken();
+    const result = await strapi.plugin(APP_NAME).service('service').generateToken();
     ctx.status = 200;
     ctx.body = result;
   },
   async getLanguageOptions(ctx) {
-    const result = await strapi.plugin('translationstudio-strapi-extension').service('service').getLanguageOptions();
+    const result = await strapi.plugin(APP_NAME).service('service').getLanguageOptions();
     ctx.status = 200;
     ctx.body = result;
   },
   async requestTranslation(ctx) {
     const payload = ctx.request.body;
     const result = await strapi
-      .plugin('translationstudio')
+      .plugin(APP_NAME)
       .service('service')
       .requestTranslation(payload);
     ctx.body = result;
@@ -85,7 +87,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       return;
     }
     const payload = JSON.parse(ctx.request.body);
-    const result = await strapi.plugin('translationstudio-strapi-extension').service('service').exportData(payload);
+    const result = await strapi.plugin(APP_NAME).service('service').exportData(payload);
     ctx.status = 200;
     ctx.body = [{ fields: result }];
   },
@@ -95,11 +97,11 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       return;
     }
     const payload = JSON.parse(ctx.request.body);
-    const result = await strapi.plugin('translationstudio-strapi-extension').service('service').importData(payload);
+    const result = await strapi.plugin(APP_NAME).service('service').importData(payload);
     ctx.body = result;
   },
   async ping(ctx) {
-    const result = await strapi.plugin('translationstudio-strapi-extension').service('service').ping();
+    const result = await strapi.plugin(APP_NAME).service('service').ping();
     ctx.status = 204;
     ctx.body = result;
   },
@@ -108,12 +110,12 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       ctx.status = 400;
       return;
     }
-    const result = await strapi.plugin('translationstudio-strapi-extension').service('service').getLanguages();
+    const result = await strapi.plugin(APP_NAME).service('service').getLanguages();
     ctx.status = 200;
     ctx.body = result;
   },
   async getEmail(ctx) {
-    const result = await strapi.plugin('translationstudio-strapi-extension').service('service').getEmail(ctx);
+    const result = await strapi.plugin(APP_NAME).service('service').getEmail(ctx);
     ctx.body = result;
   },
   async getEntryData(ctx) {
@@ -123,10 +125,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     }
     try {
       const [contentTypeID, entryID] = uid.split('#');
-      const entry = await strapi
-        .plugin('translationstudio')
-        .service('service')
-        .getEntryData(contentTypeID, entryID, locale);
+      const entry = await strapi.plugin(APP_NAME).service('service').getEntryData(contentTypeID, entryID, locale);
       return entry;
     } catch (error) {
       return ctx.badRequest('Failed to get entry data', { error: error.message });

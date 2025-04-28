@@ -30,13 +30,17 @@ import transformResponse from "./functions/exportData/transformResponse";
 import processEntryFields from "./functions/exportData/processEntryFields";
 import { updateEntry } from "./functions/importData/updateEntry";
 import { prepareImportData } from "./functions/importData/prepareImportData";
+
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+
+const TRANSLATIONTUDIO_URL = "https://cms-strapi-service-7866fdd79eab.herokuapp.com";
+const APP_NAME = "translationstudio-strapi-extension";
 
 const service = ({ strapi }: { strapi: Core.Strapi }) => {
   const pluginStore = strapi.store({
     type: "plugin",
-    name: "translationstudio",
+    name: APP_NAME,
   });
   return {
     // translationstudio Lizenz
@@ -68,7 +72,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
       const secretKey = crypto.randomBytes(64).toString("hex");
       const token = jwt.sign(
         {
-          app: "translationstudio",
+          app: APP_NAME,
           iat: Math.floor(Date.now() / 1000),
         },
         secretKey,
@@ -84,7 +88,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
     async getLanguageOptions() {
       const { license } = await this.getLicense();
       const response = await fetch(
-        "https://cms-strapi-service-7866fdd79eab.herokuapp.com/mappings",
+        TRANSLATIONTUDIO_URL + "/mappings",
         {
           headers: { Authorization: `${license}` },
         }
@@ -141,7 +145,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
     async requestTranslation(payload: TranslationRequest) {
       const { license } = await this.getLicense();
       const response = await fetch(
-        "https://cms-strapi-service-7866fdd79eab.herokuapp.com/translate",
+        TRANSLATIONTUDIO_URL + "/translate",
         {
           method: "POST",
           headers: {
