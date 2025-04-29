@@ -271,7 +271,7 @@ const SettingsPage = () => {
                 </svg>
               }
             >
-              {isLoadingToken ? 'Generating...' : 'Generate Access Key'}
+              {isLoadingToken ? 'Generating...' : (tokenValue ? 'Generate new Access Key' : 'Generate Access Key')}
             </Button>
           </Box>
 
