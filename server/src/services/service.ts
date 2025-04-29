@@ -35,7 +35,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
 const TRANSLATIONTUDIO_URL = "https://cms-strapi-service-7866fdd79eab.herokuapp.com";
-const APP_NAME = "translationstudio-strapi-extension";
+const APP_NAME = "translationstudio";
 
 const service = ({ strapi }: { strapi: Core.Strapi }) => {
   const pluginStore = strapi.store({

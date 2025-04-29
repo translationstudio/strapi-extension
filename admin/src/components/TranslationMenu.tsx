@@ -63,7 +63,7 @@ const TranslationMenu = () => {
   {
     try 
     {
-      const response = await get('/translationstudio-strapi-extension/email');
+      const response = await get('/translationstudio/email');
       setEmail(response.data.email ?? '');
     }
     catch (error)
@@ -81,7 +81,7 @@ const TranslationMenu = () => {
 
     const fetchLanguages = async () => {
       try {
-        const response = await get('/translationstudio-strapi-extension/mappings');
+        const response = await get('/translationstudio/mappings');
         setLanguages(response.data);
       } catch (error) {
         console.error('Error fetching languages:', error);
@@ -178,7 +178,7 @@ const TranslationMenu = () => {
     const entryUid = isCollectionType ? `${model}#${id}` : model;
 
     try {
-      const entryResponse = await post('/translationstudio-strapi-extension/entrydata', {
+      const entryResponse = await post('/translationstudio/entrydata', {
         uid: entryUid,
         locale: source,
       });
@@ -209,7 +209,7 @@ const TranslationMenu = () => {
         },
       };
 
-      const response = await post('/translationstudio-strapi-extension/translate', payload);
+      const response = await post('/translationstudio/translate', payload);
       displayAlert(
         response.data === true ? 'success' : 'danger',
         response.data === true

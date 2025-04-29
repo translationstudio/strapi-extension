@@ -40,7 +40,7 @@ const SettingsPage = () => {
       setIsLoading(true);
       try
       {
-        const response = await get('/translationstudio-strapi-extension/getLicense');
+        const response = await get('/translationstudio/getLicense');
         if (response.data.license) {
           setLicenseValue(response.data.license);
         } else {
@@ -62,7 +62,7 @@ const SettingsPage = () => {
     const fetchToken = async () => {
       setIsLoadingToken(true);
       try{
-        const response = await get('/translationstudio-strapi-extension/getToken');
+        const response = await get('/translationstudio/getToken');
         if (response.data.token) {
           setTokenValue(response.data.token);
         } else {
@@ -88,7 +88,7 @@ const SettingsPage = () => {
     
     try
     {
-      const response = await post('/translationstudio-strapi-extension/setLicense', { license: licenseValue });
+      const response = await post('/translationstudio/setLicense', { license: licenseValue });
       if (response) {
         displayAlert('success');
         return;
@@ -116,7 +116,7 @@ const SettingsPage = () => {
     setIsLoadingToken(true);
     try
     {
-      const response = await post('/translationstudio-strapi-extension/generateToken');
+      const response = await post('/translationstudio/generateToken');
       if (response.data?.token) {
         setTokenValue(response.data.token);
       }

@@ -17,7 +17,7 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 */
 import type { Core } from '@strapi/strapi';
 
-const APP_NAME = "translationstudio-strapi-extension";
+const APP_NAME = "translationstudio";
 
 const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
   async validateToken(ctx) {
