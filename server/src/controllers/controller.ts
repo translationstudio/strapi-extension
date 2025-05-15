@@ -17,7 +17,7 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 */
 import type { Core } from '@strapi/strapi';
 
-const APP_NAME = "translationstudio";
+const APP_NAME = 'translationstudio';
 
 const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
   async validateToken(ctx) {
@@ -75,10 +75,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
   },
   async requestTranslation(ctx) {
     const payload = ctx.request.body;
-    const result = await strapi
-      .plugin(APP_NAME)
-      .service('service')
-      .requestTranslation(payload);
+    const result = await strapi.plugin(APP_NAME).service('service').requestTranslation(payload);
     ctx.body = result;
   },
   async exportData(ctx) {
@@ -97,6 +94,10 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       return;
     }
     const payload = JSON.parse(ctx.request.body);
+    console.log('');
+    console.log('IMPORT DATA');
+    console.log(JSON.stringify(payload, null, 2));
+    console.log('');
     const result = await strapi.plugin(APP_NAME).service('service').importData(payload);
     ctx.body = result;
   },
@@ -125,7 +126,10 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     }
     try {
       const [contentTypeID, entryID] = uid.split('#');
-      const entry = await strapi.plugin(APP_NAME).service('service').getEntryData(contentTypeID, entryID, locale);
+      const entry = await strapi
+        .plugin(APP_NAME)
+        .service('service')
+        .getEntryData(contentTypeID, entryID, locale);
       return entry;
     } catch (error) {
       return ctx.badRequest('Failed to get entry data', { error: error.message });

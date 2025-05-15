@@ -35,13 +35,34 @@ export async function updateEntry(
     locale: sourceLocale,
   });
 
+  console.log('Original entry:', JSON.stringify(originalEntry, null, 2));
+
   // Process data recursively to handle blocks in all nested structures
   const processedData = processDataRecursively(data);
+  console.log('Processed data:', JSON.stringify(processedData, null, 2));
+
+  // Validate blocks data before update
+  for (const [key, value] of Object.entries(processedData)) {
+    if (attributes[key]?.type === 'blocks' && typeof value === 'string') {
+      console.warn(
+        `Field ${key} is a blocks field but received string value. Converting to blocks format.`
+      );
+      // Use htmlToJson instead of creating a simple paragraph
+      processedData[key] = htmlToJson(value);
+      console.log(`Converted ${key} blocks:`, JSON.stringify(processedData[key], null, 2));
+    }
+  }
 
   // Filter out non-localized fields
   const localizedData: Record<string, any> = {};
+  console.log('Available attributes:', Object.keys(attributes));
 
   for (const field in processedData) {
+    console.log(`Checking field ${field}:`, {
+      hasAttribute: !!attributes[field],
+      pluginOptions: attributes[field]?.pluginOptions,
+    });
+
     // Check if field exists in attributes and is localized
     if (
       attributes[field] &&
@@ -51,12 +72,17 @@ export async function updateEntry(
       localizedData[field] = processedData[field];
     }
   }
+  console.log('Localized data to update:', JSON.stringify(localizedData, null, 2));
 
-  await strapi.documents(contentTypeID as any).update({
+  const newEntry = await strapi.documents(contentTypeID as any).update({
     documentId: entryID,
     locale: targetLocale,
     data: localizedData,
   });
+  console.log('');
+  console.log('Updated entry:');
+  console.log(JSON.stringify(newEntry, null, 2));
+  console.log('');
 
   if (originalEntry.publishedAt !== null) {
     await strapi.documents(contentTypeID as any).publish({
@@ -66,38 +92,39 @@ export async function updateEntry(
   }
 }
 
-export function processDataRecursively(data: any): any {
+export function processDataRecursively(data: any, schema?: any): any {
   if (!data || typeof data !== 'object') {
     return data;
   }
 
-  // Handle arrays (for repeatable components and dynamic zones)
+  // Handle arrays
   if (Array.isArray(data)) {
-    return data.map((item) => processDataRecursively(item));
+    if (data[0]?.fields) {
+      const processedFields = {};
+
+      for (const fieldData of data[0].fields) {
+        if (fieldData.realType === 'blocks') {
+          if (fieldData.translatableValue?.[0]) {
+            // Convert HTML to blocks structure
+            processedFields[fieldData.field] = htmlToJson(fieldData.translatableValue[0]);
+            console.log(
+              `Converted ${fieldData.field} blocks:`,
+              JSON.stringify(processedFields[fieldData.field], null, 2)
+            );
+          }
+        } else {
+          processedFields[fieldData.field] = fieldData.translatableValue?.[0] || null;
+        }
+      }
+      return processedFields;
+    }
+    return data.map((item) => processDataRecursively(item, schema));
   }
 
   // Process object properties
-  const result: Record<string, any> = {};
-
+  const result = {};
   for (const key in data) {
-    const value = data[key];
-
-    if (
-      typeof value === 'string' &&
-      (key.includes('Blocks') || key.includes('RTBlocks') || key === 'blocks')
-    ) {
-      // Convert HTML to JSON structure expected by Strapi blocks
-      result[key] = htmlToJson(value);
-    }
-    // Handle nested objects (components, etc.)
-    else if (value && typeof value === 'object') {
-      result[key] = processDataRecursively(value);
-    }
-    // Keep other values as is
-    else {
-      result[key] = value;
-    }
+    result[key] = processDataRecursively(data[key], schema);
   }
-
   return result;
 }

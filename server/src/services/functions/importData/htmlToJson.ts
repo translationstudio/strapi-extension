@@ -17,115 +17,119 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 */
 import parseInlineElements from './parseInlineElements';
 
-function parseHeading(tag: string, innerText: string) {
-  const level = parseInt(tag[1]);
-  return {
-    type: 'heading',
-    level,
-    children: [{ type: 'text', text: innerText.trim() }],
-  };
-}
+export default function htmlToJson(html: string): any[] {
+  // Helper function to parse HTML string
+  function parseHTML(html: string): { tag: string; attrs: any; content: string }[] {
+    const elements: { tag: string; attrs: any; content: string }[] = [];
+    const tagRegex = /<([a-z]+)((?:\s+[a-z-]+="[^"]*")*)\s*>([\s\S]*?)<\/\1>/gi;
+    let match;
 
-function parseParagraph(innerText: string) {
-  return {
-    type: 'paragraph',
-    children: parseInlineElements(innerText),
-  };
-}
+    while ((match = tagRegex.exec(html)) !== null) {
+      const [, tag, attributes, content] = match;
+      const attrs: any = {};
 
-function parseList(tag: string, innerText: string) {
-  const listType = tag === 'ul' ? 'unordered' : 'ordered';
-  const listItems: any[] = [];
-  const listItemRegex = /<li>(.*?)<\/li>/g;
-  let itemMatch;
+      // Parse attributes
+      const attrRegex = /([a-z-]+)="([^"]*)"/gi;
+      let attrMatch;
+      while ((attrMatch = attrRegex.exec(attributes)) !== null) {
+        attrs[attrMatch[1]] = attrMatch[2];
+      }
 
-  while ((itemMatch = listItemRegex.exec(innerText)) !== null) {
-    listItems.push({
-      type: 'list-item',
-      children: parseInlineElements(itemMatch[1]),
-    });
+      elements.push({ tag, attrs, content });
+    }
+    return elements;
   }
 
-  return {
-    type: 'list',
-    format: listType,
-    children: listItems,
-  };
-}
+  function parseFormattedText(text: string): any {
+    const textNode: any = { type: 'text', text };
 
-function htmlToJson(htmlData: string): any[] {
-  const jsonData: any[] = [];
+    // Check for formatting
+    if (text.includes('<strong>') || text.includes('**')) textNode.bold = true;
+    if (text.includes('<em>') || text.includes('*')) textNode.italic = true;
+    if (text.includes('<u>') || text.includes('_')) textNode.underline = true;
+    if (text.includes('<code>') || text.includes('`')) textNode.code = true;
+    if (text.includes('<del>') || text.includes('~~')) textNode.strikethrough = true;
 
-  // Parse block elements
-  const blockRegex = /<(h[1-3]|p|ul|ol)(?:[^>]*?)>([\s\S]*?)<\/\1>/g;
-  let match;
+    // Clean up the text by removing HTML tags
+    textNode.text = text
+      .replace(/<[^>]+>/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/_/g, '')
+      .replace(/`/g, '')
+      .replace(/~~/g, '');
 
-  while ((match = blockRegex.exec(htmlData)) !== null) {
-    const [, tag, content] = match;
+    return textNode;
+  }
 
-    switch (tag) {
-      case 'h1':
-      case 'h2':
-      case 'h3':
-        jsonData.push(parseHeading(tag, content));
-        break;
-      case 'p':
-        // Process links inside paragraph
-        if (content.includes('<a ')) {
-          const linkRegex = /<a\s+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
-          let linkMatch;
-          let lastIndex = 0;
-          const children = [];
+  function parseList(html: string, format: 'ordered' | 'unordered'): any {
+    const listItems = html.match(/<li>([\s\S]*?)<\/li>/g) || [];
 
-          // Add empty text node at the beginning
-          children.push({ type: 'text', text: '' });
+    return {
+      type: 'list',
+      format,
+      children: listItems.map((item) => ({
+        type: 'list-item',
+        children: parseListContent(item.replace(/<li>|<\/li>/g, '')),
+      })),
+    };
+  }
 
-          while ((linkMatch = linkRegex.exec(content)) !== null) {
-            const [fullMatch, url, linkText] = linkMatch;
+  function parseListContent(content: string): any[] {
+    const children = [{ type: 'text', text: '' }];
 
-            // Add text before link if any
-            if (linkMatch.index > lastIndex) {
-              const beforeLinkText = content.substring(lastIndex, linkMatch.index);
-              if (beforeLinkText) {
-                children.push({ type: 'text', text: beforeLinkText });
-              }
-            }
+    // Parse links first
+    const linkRegex = /<a\s+href="([^"]+)">([\s\S]*?)<\/a>/g;
+    let lastIndex = 0;
+    let match;
 
-            // Add the link
-            children.push({
-              type: 'link',
-              url,
-              children: [{ type: 'text', text: linkText }],
-            });
+    while ((match = linkRegex.exec(content)) !== null) {
+      const [fullMatch, href, linkText] = match;
 
-            lastIndex = linkMatch.index + fullMatch.length;
-          }
-
-          // Add text after the last link if any
-          const afterLastLink = content.substring(lastIndex);
-          if (afterLastLink) {
-            children.push({ type: 'text', text: afterLastLink });
-          } else {
-            // Add empty text node at the end if there's no content after the link
-            children.push({ type: 'text', text: '' });
-          }
-
-          jsonData.push({
-            type: 'paragraph',
-            children,
-          });
-        } else {
-          jsonData.push(parseParagraph(content));
+      // Add any text before the link
+      if (match.index > lastIndex) {
+        const textBefore = content.slice(lastIndex, match.index);
+        if (textBefore) {
+          children.push(parseFormattedText(textBefore));
         }
-        break;
+      }
+
+      // Add the link
+      children.push({
+        type: 'link',
+        url: href,
+        children: [parseFormattedText(linkText)],
+      });
+
+      lastIndex = match.index + fullMatch.length;
+    }
+
+    // Add any remaining text
+    if (lastIndex < content.length) {
+      const remainingText = content.slice(lastIndex);
+      if (remainingText) {
+        children.push(parseFormattedText(remainingText));
+      }
+    }
+
+    children.push({ type: 'text', text: '' });
+    return children;
+  }
+
+  const blocks: any[] = [];
+  const elements = parseHTML(html);
+
+  for (const element of elements) {
+    switch (element.tag.toLowerCase()) {
       case 'ul':
-      case 'ol':
-        jsonData.push(parseList(tag, content));
+        blocks.push(parseList(element.content, 'unordered'));
         break;
+      case 'ol':
+        blocks.push(parseList(element.content, 'ordered'));
+        break;
+      // Add other block types if needed
     }
   }
 
-  return jsonData;
+  return blocks;
 }
-
-export default htmlToJson;

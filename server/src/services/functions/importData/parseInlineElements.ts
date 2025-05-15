@@ -15,92 +15,70 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
+/**
+ * Parses HTML and markdown-formatted text into a structured format for richtext fields
+ * @param {string} text - The HTML/markdown text to parse
+ * @returns {any[]} - Array of structured text elements
+ */
 function parseInlineElements(text: string): any[] {
-  // If text is plain with no HTML tags, return it as is
-  if (!text.includes('<')) {
-    return [{ type: 'text', text }];
-  }
+  const elements: any[] = [];
 
-  // Process links first (as they might contain formatting)
-  /**
-   * check for <a href="....">text</a>
-   */
-  const linkRegex = /<a\s+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
-  if (text.includes('<a ')) {
-    let linkMatch;
-    let lastIndex = 0;
-    const elements = [];
+  // Add empty text node at start
+  elements.push({ type: 'text', text: '' });
 
-    while ((linkMatch = linkRegex.exec(text)) !== null) {
-      const [fullMatch, url, linkContent] = linkMatch;
+  // Parse inline elements
+  const regex =
+    /<(strong|em|u|code|del|a)\s*(?:href="([^"]+)")?>([^<]+)<\/\1>|~~([^~]+)~~|([^<~]+)/g;
+  let match;
 
-      // Add any text before this link
-      if (linkMatch.index > lastIndex) {
-        const beforeText = text.substring(lastIndex, linkMatch.index);
-        if (beforeText) {
-          elements.push(...parseInlineElements(beforeText));
-        }
-      }
+  while ((match = regex.exec(text)) !== null) {
+    const [, tag, href, content, strikethrough, plainText] = match;
 
-      // Add the link
+    if (plainText) {
+      elements.push({ type: 'text', text: plainText });
+    } else if (strikethrough) {
+      elements.push({ type: 'text', text: strikethrough, strikethrough: true });
+    } else if (tag === 'a') {
       elements.push({
         type: 'link',
-        url,
-        children: parseInlineElements(linkContent),
+        url: href,
+        children: [
+          {
+            type: 'text',
+            text: content,
+            // Parse formatting within link text
+            ...(content.includes('**') && { bold: true }),
+            ...(content.includes('*') && { italic: true }),
+            ...(content.includes('_') && { underline: true }),
+            ...(content.includes('~~') && { strikethrough: true }),
+            ...(content.includes('`') && { code: true }),
+          },
+        ],
       });
-
-      lastIndex = linkMatch.index + fullMatch.length;
-    }
-
-    // Add any remaining text after the last link
-    if (lastIndex < text.length) {
-      const afterText = text.substring(lastIndex);
-      if (afterText) {
-        elements.push(...parseInlineElements(afterText));
+    } else {
+      const textNode = { type: 'text', text: content };
+      switch (tag) {
+        case 'strong':
+          textNode['bold'] = true;
+          break;
+        case 'em':
+          textNode['italic'] = true;
+          break;
+        case 'u':
+          textNode['underline'] = true;
+          break;
+        case 'code':
+          textNode['code'] = true;
+          break;
       }
+      elements.push(textNode);
     }
-
-    return elements;
   }
 
-  // Process formatting tags
-  const formatRegex = /<(strong|em|u|del)>([\s\S]*?)<\/\1>/;
-  const match = formatRegex.exec(text);
+  // Add empty text node at end
+  elements.push({ type: 'text', text: '' });
 
-  if (match) {
-    const [fullMatch, tag, content] = match;
-    const beforeText = text.substring(0, match.index);
-    const afterText = text.substring(match.index + fullMatch.length);
-    const elements = [];
-
-    // Add any text before the tag
-    if (beforeText) {
-      elements.push(...parseInlineElements(beforeText));
-    }
-
-    // Process the content inside the tag (recursively to handle nested tags)
-    const nestedElements = parseInlineElements(content);
-
-    // Apply the current tag formatting to all nested elements
-    nestedElements.forEach((element) => {
-      if (tag === 'strong') element.bold = true;
-      else if (tag === 'em') element.italic = true;
-      else if (tag === 'u') element.underline = true;
-      else if (tag === 'del') element.strikethrough = true;
-    });
-
-    elements.push(...nestedElements);
-
-    // Add any text after the tag
-    if (afterText) {
-      elements.push(...parseInlineElements(afterText));
-    }
-
-    return elements;
-  }
-
-  // If we get here, there are no more tags to process
-  return [{ type: 'text', text }];
+  return elements;
 }
 
 export default parseInlineElements;
