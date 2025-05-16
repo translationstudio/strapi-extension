@@ -15,63 +15,84 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
+
 /**
  * Parses HTML and markdown-formatted text into a structured format for richtext fields
  * @param {string} text - The HTML/markdown text to parse
- * @returns {any[]} - Array of structured text elements
+ * @returns {ContentNode[]} - Array of structured text elements
  */
-function parseInlineElements(text: string): any[] {
-  const elements: any[] = [];
+interface TextNode {
+  type: 'text';
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  code?: boolean;
+  strikethrough?: boolean;
+}
+
+interface LinkNode {
+  type: 'link';
+  url: string;
+  children: TextNode[];
+}
+
+type ContentNode = TextNode | LinkNode;
+
+function parseInlineElements(text: string): ContentNode[] {
+  const elements: ContentNode[] = [];
 
   // Add empty text node at start
   elements.push({ type: 'text', text: '' });
 
-  // Parse inline elements
+  // Parse inline elements including nested formatting in links
   const regex =
-    /<(strong|em|u|code|del|a)\s*(?:href="([^"]+)")?>([^<]+)<\/\1>|~~([^~]+)~~|([^<~]+)/g;
+    /<a\s+href="([^"]+)">(.*?)<\/a>|<(strong|em|u|code|del)>(.*?)<\/\3>|~~([^~]+)~~|([^<~]+)/gs;
   let match;
 
   while ((match = regex.exec(text)) !== null) {
-    const [, tag, href, content, strikethrough, plainText] = match;
+    const [full, href, linkContent, tag, content, strikethrough, plainText] = match;
 
-    if (plainText) {
-      elements.push({ type: 'text', text: plainText });
-    } else if (strikethrough) {
-      elements.push({ type: 'text', text: strikethrough, strikethrough: true });
-    } else if (tag === 'a') {
+    if (href && linkContent) {
+      // Handle link with potential nested formatting
+      const linkChildren = parseInlineElements(linkContent).filter(
+        (node) => node.type === 'text' && node.text !== ''
+      );
+
       elements.push({
         type: 'link',
         url: href,
-        children: [
-          {
-            type: 'text',
-            text: content,
-            // Parse formatting within link text
-            ...(content.includes('**') && { bold: true }),
-            ...(content.includes('*') && { italic: true }),
-            ...(content.includes('_') && { underline: true }),
-            ...(content.includes('~~') && { strikethrough: true }),
-            ...(content.includes('`') && { code: true }),
-          },
-        ],
+        children: linkChildren as TextNode[],
       });
-    } else {
-      const textNode = { type: 'text', text: content };
+    } else if (tag && content) {
+      // Handle regular formatting tags
+      const textNode: TextNode = { type: 'text', text: content };
       switch (tag) {
         case 'strong':
-          textNode['bold'] = true;
+          textNode.bold = true;
           break;
         case 'em':
-          textNode['italic'] = true;
+          textNode.italic = true;
           break;
         case 'u':
-          textNode['underline'] = true;
+          textNode.underline = true;
           break;
         case 'code':
-          textNode['code'] = true;
+          textNode.code = true;
+          break;
+        case 'del':
+          textNode.strikethrough = true;
           break;
       }
       elements.push(textNode);
+    } else if (strikethrough) {
+      elements.push({ type: 'text', text: strikethrough, strikethrough: true });
+    } else if (plainText) {
+      if (plainText.trim()) {
+        elements.push({ type: 'text', text: plainText });
+      } else if (plainText.includes(' ')) {
+        elements.push({ type: 'text', text: plainText });
+      }
     }
   }
 

@@ -19,7 +19,7 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 export default function htmlToJson(html: string): any[] {
   function parseHTML(html: string): { tag: string; attrs: any; content: string }[] {
     const elements: { tag: string; attrs: any; content: string }[] = [];
-    const tagRegex = /<([a-z]+)((?:\s+[a-z-]+="[^"]*")*)\s*>([\s\S]*?)<\/\1>/gi;
+    const tagRegex = /<([a-z0-9]+)((?:\s+[a-z-]+="[^"]*")*)\s*>([\s\S]*?)<\/\1>/gi;
     let match;
 
     while ((match = tagRegex.exec(html)) !== null) {
@@ -72,11 +72,12 @@ export default function htmlToJson(html: string): any[] {
       }
 
       if (tag.startsWith('<')) {
+        pushSegment();
+
         if (tag.startsWith('</')) {
           const tagName = tag.slice(2, -1).toLowerCase();
           const lastTag = formatStack.pop();
           if (lastTag && lastTag.type === tagName) {
-            pushSegment();
             switch (tagName) {
               case 'strong':
                 currentFormat.bold = false;
@@ -89,6 +90,9 @@ export default function htmlToJson(html: string): any[] {
                 break;
               case 'code':
                 currentFormat.code = false;
+                break;
+              case 'del':
+                currentFormat.strikethrough = false;
                 break;
             }
           }
@@ -108,8 +112,10 @@ export default function htmlToJson(html: string): any[] {
             case 'code':
               currentFormat.code = true;
               break;
+            case 'del':
+              currentFormat.strikethrough = true;
+              break;
           }
-          pushSegment();
         }
       } else {
         currentText += tag;
@@ -144,24 +150,15 @@ export default function htmlToJson(html: string): any[] {
 
       if (match.index > lastIndex) {
         const textBefore = content.slice(lastIndex, match.index);
-        if (textBefore) {
+        if (textBefore.trim()) {
           children.push(...parseInlineContent(textBefore));
         }
       }
 
-      // Parse link content preserving all formatting
-      const linkChildren = parseInlineContent(linkText);
-
-      // If the link content has strikethrough, apply it to the whole link
-      const hasStrikethrough = linkChildren.some((child) => child.strikethrough);
-
       children.push({
         type: 'link',
         url: href,
-        children: linkChildren.map((child) => ({
-          ...child,
-          strikethrough: hasStrikethrough || child.strikethrough,
-        })),
+        children: parseInlineContent(linkText),
       });
 
       lastIndex = match.index + fullMatch.length;
@@ -169,7 +166,7 @@ export default function htmlToJson(html: string): any[] {
 
     if (lastIndex < content.length) {
       const remainingText = content.slice(lastIndex);
-      if (remainingText) {
+      if (remainingText.trim()) {
         children.push(...parseInlineContent(remainingText));
       }
     }
@@ -194,6 +191,18 @@ export default function htmlToJson(html: string): any[] {
 
   for (const element of elements) {
     switch (element.tag.toLowerCase()) {
+      case 'h1':
+      case 'h2':
+      case 'h3':
+      case 'h4':
+      case 'h5':
+      case 'h6':
+        blocks.push({
+          type: 'heading',
+          level: parseInt(element.tag.slice(1)),
+          children: parseListContent(element.content),
+        });
+        break;
       case 'p':
         blocks.push(parseParagraph(element.content));
         break;
