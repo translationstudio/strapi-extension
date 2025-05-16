@@ -35,11 +35,8 @@ export async function updateEntry(
     locale: sourceLocale,
   });
 
-  console.log('Original entry:', JSON.stringify(originalEntry, null, 2));
-
   // Process data recursively to handle blocks in all nested structures
   const processedData = processDataRecursively(data);
-  console.log('Processed data:', JSON.stringify(processedData, null, 2));
 
   // Validate blocks data before update
   for (const [key, value] of Object.entries(processedData)) {
@@ -49,20 +46,13 @@ export async function updateEntry(
       );
       // Use htmlToJson instead of creating a simple paragraph
       processedData[key] = htmlToJson(value);
-      console.log(`Converted ${key} blocks:`, JSON.stringify(processedData[key], null, 2));
     }
   }
 
   // Filter out non-localized fields
   const localizedData: Record<string, any> = {};
-  console.log('Available attributes:', Object.keys(attributes));
 
   for (const field in processedData) {
-    console.log(`Checking field ${field}:`, {
-      hasAttribute: !!attributes[field],
-      pluginOptions: attributes[field]?.pluginOptions,
-    });
-
     // Check if field exists in attributes and is localized
     if (
       attributes[field] &&
@@ -72,17 +62,12 @@ export async function updateEntry(
       localizedData[field] = processedData[field];
     }
   }
-  console.log('Localized data to update:', JSON.stringify(localizedData, null, 2));
 
   const newEntry = await strapi.documents(contentTypeID as any).update({
     documentId: entryID,
     locale: targetLocale,
     data: localizedData,
   });
-  console.log('');
-  console.log('Updated entry:');
-  console.log(JSON.stringify(newEntry, null, 2));
-  console.log('');
 
   if (originalEntry.publishedAt !== null) {
     await strapi.documents(contentTypeID as any).publish({
@@ -107,10 +92,6 @@ export function processDataRecursively(data: any, schema?: any): any {
           if (fieldData.translatableValue?.[0]) {
             // Convert HTML to blocks structure
             processedFields[fieldData.field] = htmlToJson(fieldData.translatableValue[0]);
-            console.log(
-              `Converted ${fieldData.field} blocks:`,
-              JSON.stringify(processedFields[fieldData.field], null, 2)
-            );
           }
         } else {
           processedFields[fieldData.field] = fieldData.translatableValue?.[0] || null;

@@ -295,7 +295,7 @@ const TranslationMenu = () => {
                 style={{ color: 'white' }}
               >
                 <Typography style={{ color: 'white' }}>
-                  translate immediately AAA (and ignore quotes)
+                  translate immediately (and ignore quotes)
                 </Typography>
               </Checkbox>
             </Box>

@@ -15,10 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-import parseInlineElements from './parseInlineElements';
 
 export default function htmlToJson(html: string): any[] {
-  // Helper function to parse HTML string
   function parseHTML(html: string): { tag: string; attrs: any; content: string }[] {
     const elements: { tag: string; attrs: any; content: string }[] = [];
     const tagRegex = /<([a-z]+)((?:\s+[a-z-]+="[^"]*")*)\s*>([\s\S]*?)<\/\1>/gi;
@@ -28,7 +26,6 @@ export default function htmlToJson(html: string): any[] {
       const [, tag, attributes, content] = match;
       const attrs: any = {};
 
-      // Parse attributes
       const attrRegex = /([a-z-]+)="([^"]*)"/gi;
       let attrMatch;
       while ((attrMatch = attrRegex.exec(attributes)) !== null) {
@@ -40,26 +37,87 @@ export default function htmlToJson(html: string): any[] {
     return elements;
   }
 
-  function parseFormattedText(text: string): any {
-    const textNode: any = { type: 'text', text };
+  function parseInlineContent(content: string): any[] {
+    const segments: any[] = [];
+    let currentText = '';
+    let formatStack: { type: string; index: number }[] = [];
+    let currentFormat = {
+      bold: false,
+      italic: false,
+      underline: false,
+      code: false,
+      strikethrough: false,
+    };
 
-    // Check for formatting
-    if (text.includes('<strong>') || text.includes('**')) textNode.bold = true;
-    if (text.includes('<em>') || text.includes('*')) textNode.italic = true;
-    if (text.includes('<u>') || text.includes('_')) textNode.underline = true;
-    if (text.includes('<code>') || text.includes('`')) textNode.code = true;
-    if (text.includes('<del>') || text.includes('~~')) textNode.strikethrough = true;
+    const pushSegment = () => {
+      if (currentText) {
+        segments.push({
+          type: 'text',
+          text: currentText,
+          ...Object.fromEntries(Object.entries(currentFormat).filter(([_, value]) => value)),
+        });
+        currentText = '';
+      }
+    };
 
-    // Clean up the text by removing HTML tags
-    textNode.text = text
-      .replace(/<[^>]+>/g, '')
-      .replace(/\*\*/g, '')
-      .replace(/\*/g, '')
-      .replace(/_/g, '')
-      .replace(/`/g, '')
-      .replace(/~~/g, '');
+    const tags = content.split(/(<[^>]+>|~~)/);
 
-    return textNode;
+    for (const tag of tags) {
+      if (!tag) continue;
+
+      if (tag === '~~') {
+        pushSegment();
+        currentFormat.strikethrough = !currentFormat.strikethrough;
+        continue;
+      }
+
+      if (tag.startsWith('<')) {
+        if (tag.startsWith('</')) {
+          const tagName = tag.slice(2, -1).toLowerCase();
+          const lastTag = formatStack.pop();
+          if (lastTag && lastTag.type === tagName) {
+            pushSegment();
+            switch (tagName) {
+              case 'strong':
+                currentFormat.bold = false;
+                break;
+              case 'em':
+                currentFormat.italic = false;
+                break;
+              case 'u':
+                currentFormat.underline = false;
+                break;
+              case 'code':
+                currentFormat.code = false;
+                break;
+            }
+          }
+        } else {
+          const tagName = tag.slice(1, -1).toLowerCase();
+          formatStack.push({ type: tagName, index: segments.length });
+          switch (tagName) {
+            case 'strong':
+              currentFormat.bold = true;
+              break;
+            case 'em':
+              currentFormat.italic = true;
+              break;
+            case 'u':
+              currentFormat.underline = true;
+              break;
+            case 'code':
+              currentFormat.code = true;
+              break;
+          }
+          pushSegment();
+        }
+      } else {
+        currentText += tag;
+      }
+    }
+
+    pushSegment();
+    return segments.filter((segment) => segment.text.length > 0);
   }
 
   function parseList(html: string, format: 'ordered' | 'unordered'): any {
@@ -76,58 +134,91 @@ export default function htmlToJson(html: string): any[] {
   }
 
   function parseListContent(content: string): any[] {
-    const children = [{ type: 'text', text: '' }];
-
-    // Parse links first
+    const children = [];
     const linkRegex = /<a\s+href="([^"]+)">([\s\S]*?)<\/a>/g;
     let lastIndex = 0;
-    let match;
+    let match: any;
 
     while ((match = linkRegex.exec(content)) !== null) {
       const [fullMatch, href, linkText] = match;
 
-      // Add any text before the link
       if (match.index > lastIndex) {
         const textBefore = content.slice(lastIndex, match.index);
         if (textBefore) {
-          children.push(parseFormattedText(textBefore));
+          children.push(...parseInlineContent(textBefore));
         }
       }
 
-      // Add the link
+      // Parse link content preserving all formatting
+      const linkChildren = parseInlineContent(linkText);
+
+      // If the link content has strikethrough, apply it to the whole link
+      const hasStrikethrough = linkChildren.some((child) => child.strikethrough);
+
       children.push({
         type: 'link',
         url: href,
-        children: [parseFormattedText(linkText)],
+        children: linkChildren.map((child) => ({
+          ...child,
+          strikethrough: hasStrikethrough || child.strikethrough,
+        })),
       });
 
       lastIndex = match.index + fullMatch.length;
     }
 
-    // Add any remaining text
     if (lastIndex < content.length) {
       const remainingText = content.slice(lastIndex);
       if (remainingText) {
-        children.push(parseFormattedText(remainingText));
+        children.push(...parseInlineContent(remainingText));
       }
     }
 
-    children.push({ type: 'text', text: '' });
     return children;
+  }
+
+  function parseParagraph(content: string): any {
+    return {
+      type: 'paragraph',
+      children: parseListContent(content),
+    };
   }
 
   const blocks: any[] = [];
   const elements = parseHTML(html);
 
+  if (elements.length === 0 && html.trim()) {
+    blocks.push(parseParagraph(html));
+    return blocks;
+  }
+
   for (const element of elements) {
     switch (element.tag.toLowerCase()) {
+      case 'p':
+        blocks.push(parseParagraph(element.content));
+        break;
       case 'ul':
         blocks.push(parseList(element.content, 'unordered'));
         break;
       case 'ol':
         blocks.push(parseList(element.content, 'ordered'));
         break;
-      // Add other block types if needed
+      case 'blockquote':
+        blocks.push({
+          type: 'quote',
+          children: [parseParagraph(element.content)],
+        });
+        break;
+      case 'pre':
+        if (element.content.includes('<code>')) {
+          blocks.push({
+            type: 'code',
+            children: parseInlineContent(element.content),
+          });
+        }
+        break;
+      default:
+        blocks.push(parseParagraph(element.content));
     }
   }
 

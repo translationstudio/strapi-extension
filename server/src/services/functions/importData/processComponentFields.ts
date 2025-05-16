@@ -15,7 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-import { TranslationstudioTranslatable } from "../../../../../Types";
+import { TranslationstudioTranslatable } from '../../../../../Types';
+import htmlToJson from './htmlToJson';
 
 // Helper function to handle repeatable components
 function processRepeatableComponents(
@@ -34,16 +35,17 @@ function processRepeatableComponents(
 
     const componentId = field.componentInfo.id;
     if (!componentsById.has(componentId)) {
-      const existingComponent = existingComponents.find(
-        (c: any) => c.id === componentId
-      );
-      componentsById.set(
-        componentId,
-        existingComponent ? { ...existingComponent } : {}
-      );
+      const existingComponent = existingComponents.find((c: any) => c.id === componentId);
+      componentsById.set(componentId, existingComponent ? { ...existingComponent } : {});
     }
     const component = componentsById.get(componentId);
-    component[field.field] = field.translatableValue[0];
+
+    // Handle blocks fields differently
+    if (field.realType === 'blocks') {
+      component[field.field] = htmlToJson(field.translatableValue[0] || '');
+    } else {
+      component[field.field] = field.translatableValue[0];
+    }
   });
 
   return Array.from(componentsById.values())
@@ -80,7 +82,12 @@ function processNestedComponents(
     if (index === pathParts.length - 1) {
       // Add fields at the final nesting level
       fields.forEach((field) => {
-        current[part][field.field] = field.translatableValue[0];
+        // Handle blocks fields differently
+        if (field.realType === 'blocks') {
+          current[part][field.field] = htmlToJson(field.translatableValue[0] || '');
+        } else {
+          current[part][field.field] = field.translatableValue[0];
+        }
       });
     } else {
       current = current[part];
@@ -99,17 +106,13 @@ export function processComponentFields(
   componentFieldsMap.forEach((fields, namePath) => {
     if (!fields.length) return;
 
-    const pathParts = namePath.split(".");
+    const pathParts = namePath.split('.');
     const rootPath = pathParts[0];
     const schema = targetSchema.attributes?.[rootPath];
 
     if (schema?.repeatable) {
       // Handle repeatable components
-      acc[rootPath] = processRepeatableComponents(
-        fields,
-        existingEntry,
-        rootPath
-      );
+      acc[rootPath] = processRepeatableComponents(fields, existingEntry, rootPath);
     } else {
       // Handle nested components
       processNestedComponents(fields, pathParts, existingEntry, acc);

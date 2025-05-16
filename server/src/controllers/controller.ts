@@ -94,10 +94,6 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       return;
     }
     const payload = JSON.parse(ctx.request.body);
-    console.log('');
-    console.log('IMPORT DATA');
-    console.log(JSON.stringify(payload, null, 2));
-    console.log('');
     const result = await strapi.plugin(APP_NAME).service('service').importData(payload);
     ctx.body = result;
   },
