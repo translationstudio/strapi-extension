@@ -1,5 +1,5 @@
 {
-  "name": "translationstudio-strapi-extension",
+  "name": "@translationstudio/translationstudio-strapi-extension",
   "description": "translationstudio extension for strapi",
   "license": "GPL-2.0-only",
   "author": "Duncan Leininger <duncan.leininger@idmedia.com>",
@@ -46,8 +46,7 @@
   "dependencies": {
     "@strapi/design-system": "^2.0.0-rc.14",
     "@strapi/icons": "^2.0.0-rc.14",
-    "react-intl": "^7.1.10",
-    "yalc": "^1.0.0-pre.53"
+    "react-intl": "^7.1.10"
   },
   "devDependencies": {
     "@strapi/sdk-plugin": "^5.3.2",
