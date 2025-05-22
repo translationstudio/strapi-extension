@@ -34,6 +34,22 @@ export default [
   },
   {
     method: 'GET',
+    path: '/devurl',
+    handler: 'controller.getDevelopmentUrl',
+    config: {
+      policies: [],
+    },
+  },
+  {
+    method: 'POST',
+    path: '/devurl',
+    handler: 'controller.setDevelopmentUrl',
+    config: {
+      policies: [],
+    },
+  },
+  {
+    method: 'GET',
     path: '/getToken',
     handler: 'controller.getToken',
     config: {

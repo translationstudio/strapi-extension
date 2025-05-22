@@ -88,6 +88,29 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     ctx.status = 200;
     ctx.body = [{ fields: result }];
   },
+  async setDevelopmentUrl(ctx)
+  {
+    const url = ctx.request.body.url;
+    const result = await strapi.plugin(APP_NAME).service('service').setDevelopmentUrl(url);
+    if (result) {
+      ctx.status = 200;
+      ctx.body = { success:true };
+    } else {
+      ctx.status = 500;
+      ctx.body = { success:false };
+    }
+  },
+  async getDevelopmentUrl(ctx)
+  {
+    const url = await strapi.plugin(APP_NAME).service('service').getDevelopmentUrl();
+    if (url) {
+      ctx.status = 200;
+      ctx.body = { url: url};
+    } else {
+      ctx.status = 404;
+      ctx.body = { url: "" };
+    }
+  },
   async importData(ctx) {
     if (!(await this.validateToken(ctx))) {
       ctx.status = 400;

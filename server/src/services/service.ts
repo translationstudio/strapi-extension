@@ -34,7 +34,7 @@ import { prepareImportData } from './functions/importData/prepareImportData';
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
-const TRANSLATIONTUDIO_URL = 'https://cms-strapi-service-7866fdd79eab.herokuapp.com';
+const TRANSLATIONTUDIO_URL = 'https://strapi.translationstudio.tech';
 const APP_NAME = 'translationstudio';
 
 const service = ({ strapi }: { strapi: Core.Strapi }) => {
@@ -48,6 +48,18 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
       const result = await pluginStore.get({ key: 'license' });
       return { license: result };
     },
+    async getTranslationstudioUrl() {
+      try{
+        const result = await pluginStore.get({ key: 'developurl' });
+        if (typeof result === "string" && result !== "")
+          return result;
+      }
+      catch (err)
+      {
+        console.warn(err);
+      }
+      return TRANSLATIONTUDIO_URL;
+    },
     async setLicense(license: string) {
       try {
         await pluginStore.set({
@@ -58,6 +70,27 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
       } catch (error) {
         return { success: false };
       }
+    },
+    async setDevelopmentUrl(url: string) {
+      try {
+        await pluginStore.set({
+          key: 'developurl',
+          value: url,
+        });
+        return true;
+      } catch (error) {
+        return false;
+      }
+    },
+    async getDevelopmentUrl() {
+      try {
+        const result = await pluginStore.get({ key: 'developurl' });
+        if (typeof result === "string")
+          return result;
+      } catch (error) {
+        
+      }
+      return "";
     },
     // Access Token
     async getToken() {
@@ -70,24 +103,17 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
     },
     async generateToken() {
       const secretKey = crypto.randomBytes(64).toString('hex');
-      const token = jwt.sign(
-        {
-          app: APP_NAME,
-          iat: Math.floor(Date.now() / 1000),
-        },
-        secretKey,
-        { expiresIn: '10y' }
-      );
       await pluginStore.set({
         key: 'token',
-        value: token,
+        value: secretKey,
       });
-      return { token };
+      return { token: secretKey };
     },
 
     async getLanguageOptions() {
       const { license } = await this.getLicense();
-      const response = await fetch(TRANSLATIONTUDIO_URL + '/mappings', {
+      const url = await this.getTranslationstudioUrl();
+      const response = await fetch(url + '/mappings', {
         headers: { Authorization: `${license}` },
       });
       const responseData = await response.json();
@@ -129,7 +155,8 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
 
     async requestTranslation(payload: TranslationRequest) {
       const { license } = await this.getLicense();
-      const response = await fetch(TRANSLATIONTUDIO_URL + '/translate', {
+      const url = await this.getTranslationstudioUrl();
+      const response = await fetch(url + '/translate', {
         method: 'POST',
         headers: {
           Authorization: `${license}`,
