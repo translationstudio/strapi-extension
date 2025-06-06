@@ -21,8 +21,10 @@ export function processRegularFields(
   regularFields: TranslationstudioTranslatable[],
   acc: Record<string, any>
 ): Record<string, any> {
+
   regularFields.forEach((field) => {
-    acc[field.field] = field.translatableValue[0];
+    if (field.translatableValue.length === 1)
+      acc[field.field] = field.translatableValue[0];
   });
 
   return acc;
