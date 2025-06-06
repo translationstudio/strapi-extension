@@ -28,12 +28,12 @@ function processRepeatableComponents(
   const componentsById = new Map();
 
   fields.forEach((field) => {
-    if (!field.componentInfo) {
+    if (!field.uuid) {
       strapi.log.warn(`Component info missing for field: ${field.field}`);
       return;
     }
 
-    const componentId = field.componentInfo.id;
+    const componentId = field.uuid;
     if (!componentsById.has(componentId)) {
       const existingComponent = existingComponents.find((c: any) => c.id === componentId);
       componentsById.set(componentId, existingComponent ? { ...existingComponent } : {});

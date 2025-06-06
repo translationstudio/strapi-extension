@@ -6,11 +6,7 @@ export interface TranslationstudioTranslatable {
   type: 'text' | 'html';
   translatableValue: string[];
   realType: string;
-  componentInfo?: {
-    namePath: string[];
-    id: number;
-    schemaName: string;
-  };
+  uuid?: string;
 }
 
 // for /languages handling

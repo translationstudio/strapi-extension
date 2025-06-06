@@ -30,12 +30,12 @@ export function processDynamicZones(
       .sort(([a], [b]) => a - b)
       .map(([_, fields]) => {
         // Check if componentInfo exists
-        if (!fields[0].componentInfo) {
+        if (!fields[0].uuid) {
           strapi.log.warn(`Component info missing for dynamic zone field: ${fields[0].field}`);
           return null; // Will be filtered out below
         }
 
-        const { schemaName } = fields[0].componentInfo;
+        const  schemaName  = fields[0].uuid;
         const componentData = transformFieldsToData(fields);
 
         // Try to find matching existing component

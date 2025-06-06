@@ -17,8 +17,8 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 */
 import jsonToHtml from './jsonToHtml';
 import processComponent from './processComponent';
-import isFieldLocalizable from './isFieldLocalizable';
 import { TranslationstudioTranslatable } from '../../../../../Types';
+import { IStrapiComponentSchemaMap, IStrapiSchema, IStrapiSchemaEntry, IStrapiSchemaEntryAttributes, IStrapiSchemaField } from './getContentType';
 
 const DEFAULT_FIELDS = new Set([
     'id',
@@ -40,51 +40,56 @@ export interface ExportedDocumentFields {
 const isEmpty = (value: any) =>
     value === null || value === undefined || value === '';
 
-const isTranslatableField = (fieldSchema: any) =>
+const isSimpleTranslatableField = (fieldSchema: IStrapiSchemaField) =>
     ['string', 'text', 'blocks', 'richtext'].includes(fieldSchema.type) &&
-    fieldSchema.pluginOptions?.i18n?.localized !== false;
+    fieldSchema.pluginOptions?.i18n?.localized === true;
 
-const processDynamicZone = async (key: string, value: any[], schema: any) => {
+const processDynamicZone = async (key: string, value: any[], schemata: IStrapiComponentSchemaMap) => {
     const results = [];
 
     for (const component of value) {
         const componentName = component?.__component;
         if (!componentName) continue;
 
+        const schema = schemata[componentName];
+        if (!schema) continue;
+
         const fields = await processComponent(
             key,
             componentName,
             component,
             componentName,
-            component.id
+            component.id,
+            schema,
+            schemata
         );
-        results.push(...fields);
+        if (fields.length > 0)
+            results.push(...fields);
     }
 
     return results;
 };
 
-const processComponentField = async (key: string, value: any, fieldSchema: any) => {
+const processComponentField = async (key: string, value: any, fieldSchema: any, schemata: IStrapiComponentSchemaMap) => {
     const results = [];
 
-    if (fieldSchema.repeatable && Array.isArray(value)) {
-        for (const component of value) {
-            const fields = await processComponent(
-                key,
-                fieldSchema.component,
-                component,
-                fieldSchema.component,
-                component.id
-            );
-            results.push(...fields);
-        }
-    } else {
+    const candidates: any[] = Array.isArray(value) ? value : [value];
+
+    for (const component of candidates) {
+        const componentName = component?.__component;
+        if (!componentName) continue;
+
+        const schema = schemata[componentName];
+        if (!schema) continue;
+
         const fields = await processComponent(
             key,
             fieldSchema.component,
-            value,
+            component,
             fieldSchema.component,
-            value.id
+            component.id,
+            schema,
+            schemata
         );
         results.push(...fields);
     }
@@ -92,7 +97,7 @@ const processComponentField = async (key: string, value: any, fieldSchema: any) 
     return results;
 };
 
-const processRegularField = (key: string, value: any, fieldSchema: any):TranslationstudioTranslatable => {
+const processRegularField = (key: string, value: any, fieldSchema: IStrapiSchemaField): TranslationstudioTranslatable => {
     const translatedValue =
         fieldSchema.type === 'blocks' ? jsonToHtml(value) : value.toString();
 
@@ -104,53 +109,52 @@ const processRegularField = (key: string, value: any, fieldSchema: any):Translat
     };
 };
 
-export function IsLocalisableSchema(schema:any)
-{
-    return schema?.pluginOptions?.i18n?.localized === true;
+export function IsLocalisableSchema(schema: IStrapiSchemaEntry) {
+    return schema.pluginOptions?.i18n?.localized === true;
 }
 
-const processEntryFields = async (entry: any, schema: any, locale: string): Promise<ExportedDocumentFields> => {
+function IsLocalisedField(field: IStrapiSchemaField) {
+    return field.pluginOptions?.i18n?.localized === true;
+}
+
+const processEntryFields = async (entry: any, schemaData: IStrapiSchema, _locale: string): Promise<ExportedDocumentFields> => {
     const contentFields = [];
-    const staticContent:any = { };
-    
-    let randomIdNumber = 0;
+    const staticContent: any = {};
 
-    for (const [key, value] of Object.entries(entry)) 
-    {
-        randomIdNumber++;
-        
-        if (shouldSkipField(key, value)) continue;
-
-        const fieldSchema = schema[key];
-        if (!fieldSchema) continue;
-
-        /** ignore everything that is non-localiaable by default */
-        if (!isFieldLocalizable(fieldSchema, schema))
+    const schema = schemaData.entry.attributes;
+    for (const [key, value] of Object.entries(entry)) {
+        if (shouldSkipField(key, value))
             continue;
 
-        if (isTranslatableField(fieldSchema)) {
+        const fieldSchema = schema[key];
+
+        /** skip non-localisable fields */
+        if (!fieldSchema || !IsLocalisedField(fieldSchema))
+            continue;
+
+        if (isSimpleTranslatableField(fieldSchema)) {
             const translatedField = processRegularField(key, value, fieldSchema);
             contentFields.push(translatedField);
-            staticContent[key] = value;
+
+            strapi.log.info("Added translatable simple field " + key)
             continue;
         }
 
-        {
-            const zoneInfo = isDynamicZone(fieldSchema, value);
-            if (zoneInfo.isZone) {
-                if (zoneInfo.hasContent) {
-                    const zoneFields = await processDynamicZone(key, value as any[], schema);
-                    contentFields.push(...zoneFields);
-                    staticContent[key] = value;
-                }
+        const zoneInfo = isDynamicZone(fieldSchema, value);
+        if (zoneInfo.isZone) {
+            if (zoneInfo.hasContent) {
 
-                continue;
+                const zoneFields = await processDynamicZone(key, value as any[], schemaData.components);
+                contentFields.push(...zoneFields);
+                staticContent[key] = value;
             }
+
+            continue;
         }
 
         const componentInfo = isComponent(fieldSchema);
         if (componentInfo.isZone) {
-            const componentFields = await processComponentField(key, value, fieldSchema);
+            const componentFields = await processComponentField(key, value, fieldSchema, schemaData.components);
             contentFields.push(...componentFields);
             staticContent[key] = value;
         }

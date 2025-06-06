@@ -15,12 +15,75 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-export default function getContentType(contentTypeID: string) {
+export interface IStrapiSchemaField {
+    "type": string;
+    "components"?: string[];
+    "pluginOptions"?: {
+        "i18n"?: {
+            "localized": boolean;
+        }
+    }
+}
+
+export interface IStrapiSchemaEntryAttributes {
+    [fieldName: string]: IStrapiSchemaField;
+}
+
+export interface IStrapiSchemaEntry {
+    "kind": string;
+    "collectionName": string;
+    "pluginOptions": {
+        "i18n"?: {
+            "localized": boolean;
+        }
+    },
+    "attributes": IStrapiSchemaEntryAttributes
+}
+
+export interface IStrapiComponentSchemaMap {
+    [name:string] : IStrapiSchemaEntry
+}
+export interface IStrapiSchema {
+    "entry": IStrapiSchemaEntry,
+    "components": IStrapiComponentSchemaMap;
+}
+
+function getComponentSchemata(schema:IStrapiSchemaEntry) {
+    const res:IStrapiComponentSchemaMap = { };
+    
+    for (let fieldName in schema.attributes)
+    {
+        const field = schema.attributes[fieldName];
+        if (!field.components || !Array.isArray(field.components) || field.components.length === 0)
+            continue;
+
+        for (let type of field.components)
+        {
+            const schema = strapi.components[type];
+            if (schema && schema.attributes)
+                res[type] = schema;
+        }
+    }
+
+    return res;
+}
+
+
+export default function getContentType(contentTypeID: string):IStrapiSchema|null {
     
     const contentType = strapi.contentType(contentTypeID as any);
-    if (contentType?.attributes)
-        return contentType;
+    if (!contentType?.attributes)
+    {
+        strapi.log.error(`Content type or schema not found: ${contentTypeID}`);
+        return null;
+    }
 
-    throw new Error(`Content type or schema not found: ${contentTypeID}`);
+    const res:IStrapiSchema = {
+        entry: contentType as IStrapiSchemaEntry,
+        components: getComponentSchemata(contentType as IStrapiSchemaEntry)
+    }
+
+    strapi.log.info("SChema loaded for " + contentTypeID + ". Component schemata loaded: " + Object.keys(res.components).length);
+    return res;
 };
 

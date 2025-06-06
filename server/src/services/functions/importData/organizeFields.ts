@@ -28,24 +28,15 @@ export function organizeFields(
   const regularFields: TranslationstudioTranslatable[] = [];
 
   fields.forEach((field: TranslationstudioTranslatable) => {
-    if (!field.componentInfo) {
+    if (!field.uuid) {
       regularFields.push(field);
-      return;
     }
-
-    const { namePath, id } = field.componentInfo;
-    const pathString = namePath.join(".");
-
-    if (namePath[0] === "dynamiczone") {
-      if (!dynamicZoneFields.has(id)) {
-        dynamicZoneFields.set(id, []);
-      }
-      dynamicZoneFields.get(id)?.push(field);
-    } else {
-      if (!componentFieldsMap.has(pathString)) {
-        componentFieldsMap.set(pathString, []);
-      }
-      componentFieldsMap.get(pathString)?.push(field);
+    else
+    {    
+      if (!componentFieldsMap.has(field.uuid))
+        componentFieldsMap.set(field.uuid, [field]);
+      else
+        componentFieldsMap.get(field.uuid).push(field);
     }
   });
 

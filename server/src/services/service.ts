@@ -119,16 +119,18 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
         },
 
         async exportData(payload: ExportPayload) {
+            strapi.log.info("export");
             const { contentTypeID, entryID, locale } = parsePayload(payload);
             const contentType = getContentType(contentTypeID); // schema
-            if (!IsLocalisableSchema(contentType)) {
+            if (contentType === null || !IsLocalisableSchema(contentType.entry)) {
                 return {
                     fields: [],
                     keep: {}
                 }
             }
+            strapi.log.info(JSON.stringify(contentType));
             const entry = await getEntry(contentTypeID, entryID, locale); // data
-            const contentFields = await processEntryFields(entry, contentType.attributes, locale);
+            const contentFields = await processEntryFields(entry, contentType, locale);
             return transformResponse(contentFields);
         },
 
@@ -140,19 +142,24 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
             try {
                 const existingEntry = await getEntry(contentTypeID, entryID, targetLocale);
                 const targetSchema = getContentType(contentTypeID);
+                if (targetSchema === null || !IsLocalisableSchema(targetSchema.entry))
+                    throw new Error("Cannot find schema");
+
                 const data = prepareImportData(payload.document[0].fields, existingEntry, targetSchema);
-                if ((targetSchema.pluginOptions.i18n as any).localized === true) {
-                    await updateEntry(
-                        contentTypeID,
-                        entryID,
-                        sourceLocale,
-                        targetLocale,
-                        data,
-                        targetSchema.attributes
-                    );
-                }
+                /*
+                await updateEntry(
+                    contentTypeID,
+                    entryID,
+                    sourceLocale,
+                    targetLocale,
+                    data,
+                    targetSchema.attributes
+                );
+                */
+                
                 return { success: true };
             } catch (error) {
+                strapi.log.error(error);
                 return { success: false };
             }
         },
