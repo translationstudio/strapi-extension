@@ -31,7 +31,6 @@ import processEntryFields from './functions/exportData/processEntryFields';
 import { updateEntry } from './functions/importData/updateEntry';
 import { prepareImportData } from './functions/importData/prepareImportData';
 
-const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const TRANSLATIONTUDIO_URL = 'https://strapi.translationstudio.tech';
@@ -56,7 +55,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
       }
       catch (err)
       {
-        console.warn(err);
+        strapi.log.warn(err);
       }
       return TRANSLATIONTUDIO_URL;
     },
@@ -121,11 +120,11 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
     },
 
     async exportData(payload: ExportPayload) {
-      const { contentTypeID, entryID, locale } = parsePayload(payload);
-      const contentType = await getContentType(contentTypeID); // schema
-      const entry = await getEntry(contentTypeID, entryID, locale); // data
-      const contentFields = await processEntryFields(entry, contentType.attributes, locale);
-      return transformResponse(contentFields);
+        const { contentTypeID, entryID, locale } = parsePayload(payload);
+        const contentType = await getContentType(contentTypeID); // schema
+        const entry = await getEntry(contentTypeID, entryID, locale); // data
+        const contentFields = await processEntryFields(entry, contentType.attributes, locale);
+        return transformResponse(contentFields);
     },
 
     async importData(payload: ImportPayload) {

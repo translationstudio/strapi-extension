@@ -83,10 +83,18 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       ctx.status = 400;
       return;
     }
-    const payload = JSON.parse(ctx.request.body);
-    const result = await strapi.plugin(APP_NAME).service('service').exportData(payload);
-    ctx.status = 200;
-    ctx.body = [{ fields: result }];
+
+    try {
+      const payload = typeof ctx.request.body === "string" ? JSON.parse(ctx.request.body) : ctx.request.body;
+      const result = await strapi.plugin(APP_NAME).service('service').exportData(payload);
+      ctx.status = 200;
+      ctx.body = [{ fields: result }];
+    }
+    catch (ex)
+    {
+      ctx.status = 500;
+      ctx.body = { error: ex.message ?? "Generic error" };
+    }
   },
   async setDevelopmentUrl(ctx)
   {
@@ -130,9 +138,17 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       ctx.status = 400;
       return;
     }
-    const result = await strapi.plugin(APP_NAME).service('service').getLanguages();
-    ctx.status = 200;
-    ctx.body = result;
+    try
+    {
+      const result = await strapi.plugin(APP_NAME).service('service').getLanguages();
+      ctx.status = 200;
+      ctx.body = result;
+    }
+    catch (err)
+    {
+      ctx.status = 400;
+      ctx.body = { }
+    }
   },
   async getEmail(ctx) {
     const result = await strapi.plugin(APP_NAME).service('service').getEmail(ctx);
