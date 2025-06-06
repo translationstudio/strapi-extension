@@ -29,7 +29,7 @@ const getComponentSchema = async (componentName: string): Promise<Schema | null>
   try {
     return await strapi.components[componentName];
   } catch (error) {
-    console.error(`Failed to get component schema for ${componentName}:`, error);
+    strapi.log.error(`Failed to get component schema for ${componentName}:`, error);
     return null;
   }
 };
@@ -77,7 +77,7 @@ const getEntry = async (contentTypeID: string, entryID: string | undefined, loca
 
     return entry;
   } catch (error) {
-    console.error('Entry fetch error:', error);
+    strapi.log.error('Entry fetch error:', error);
     return null;
   }
 };

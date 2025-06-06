@@ -29,7 +29,7 @@ function processRepeatableComponents(
 
   fields.forEach((field) => {
     if (!field.componentInfo) {
-      console.warn(`Component info missing for field: ${field.field}`);
+      strapi.log.warn(`Component info missing for field: ${field.field}`);
       return;
     }
 

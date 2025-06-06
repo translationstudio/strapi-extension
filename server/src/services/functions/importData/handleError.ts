@@ -17,5 +17,5 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 */
 
 export function handleError(message: string, error: any): void {
-  console.error(message, error);
+  strapi.log.error(message, error);
 }

@@ -41,9 +41,7 @@ export async function updateEntry(
   // Validate blocks data before update
   for (const [key, value] of Object.entries(processedData)) {
     if (attributes[key]?.type === 'blocks' && typeof value === 'string') {
-      console.warn(
-        `Field ${key} is a blocks field but received string value. Converting to blocks format.`
-      );
+      strapi.log.warn(`Field ${key} is a blocks field but received string value. Converting to blocks format.`);
       // Use htmlToJson instead of creating a simple paragraph
       processedData[key] = htmlToJson(value);
     }

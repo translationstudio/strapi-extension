@@ -31,9 +31,7 @@ export function processDynamicZones(
       .map(([_, fields]) => {
         // Check if componentInfo exists
         if (!fields[0].componentInfo) {
-          console.warn(
-            `Component info missing for dynamic zone field: ${fields[0].field}`
-          );
+          strapi.log.warn(`Component info missing for dynamic zone field: ${fields[0].field}`);
           return null; // Will be filtered out below
         }
 
