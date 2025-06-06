@@ -15,11 +15,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-const transformResponse = (data: any[]) =>
-  data.map((item) =>
+
+const transformResponse = function(data: { fields: any[], keep: any }) 
+{
+  data.fields = data.fields.map((item) =>
     item.realType === 'blocks' && Array.isArray(item.translatableValue[0])
       ? { ...item, translatableValue: item.translatableValue[0] }
       : item
   );
+  
+  return data;
+}
 
 export default transformResponse;
