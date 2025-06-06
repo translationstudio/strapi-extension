@@ -15,12 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-const getContentType = async (contentTypeID: string) => {
-  const contentType = await strapi.contentType(contentTypeID as any);
-  if (!contentType?.attributes) {
+export default function getContentType(contentTypeID: string) {
+    
+    const contentType = strapi.contentType(contentTypeID as any);
+    if (contentType?.attributes)
+        return contentType;
+
     throw new Error(`Content type or schema not found: ${contentTypeID}`);
-  }
-  return contentType;
 };
 
-export default getContentType;

@@ -120,7 +120,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
 
         async exportData(payload: ExportPayload) {
             const { contentTypeID, entryID, locale } = parsePayload(payload);
-            const contentType = await getContentType(contentTypeID); // schema
+            const contentType = getContentType(contentTypeID); // schema
             if (!IsLocalisableSchema(contentType)) {
                 return {
                     fields: [],
@@ -139,7 +139,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
 
             try {
                 const existingEntry = await getEntry(contentTypeID, entryID, targetLocale);
-                const targetSchema = await getContentType(contentTypeID);
+                const targetSchema = getContentType(contentTypeID);
                 const data = prepareImportData(payload.document[0].fields, existingEntry, targetSchema);
                 if ((targetSchema.pluginOptions.i18n as any).localized === true) {
                     await updateEntry(
