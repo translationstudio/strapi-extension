@@ -17,11 +17,11 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 */
 import type { Core } from '@strapi/strapi';
 import type {
-  ExportPayload,
-  ImportPayload,
-  LocaleMap,
-  StrapiLocale,
-  TranslationRequest,
+    ExportPayload,
+    ImportPayload,
+    LocaleMap,
+    StrapiLocale,
+    TranslationRequest,
 } from '../../../Types';
 import getContentType from './functions/exportData/getContentType';
 import parsePayload from './functions/exportData/parsePayload';
@@ -37,169 +37,167 @@ const TRANSLATIONTUDIO_URL = 'https://strapi.translationstudio.tech';
 const APP_NAME = 'translationstudio';
 
 const service = ({ strapi }: { strapi: Core.Strapi }) => {
-  const pluginStore = strapi.store({
-    type: 'plugin',
-    name: APP_NAME,
-  });
-  return {
-    // translationstudio Lizenz
-    async getLicense() {
-      const result = await pluginStore.get({ key: 'license' });
-      return { license: result };
-    },
-    async getTranslationstudioUrl() {
-      try{
-        const result = await pluginStore.get({ key: 'developurl' });
-        if (typeof result === "string" && result !== "")
-          return result;
-      }
-      catch (err)
-      {
-        strapi.log.warn(err);
-      }
-      return TRANSLATIONTUDIO_URL;
-    },
-    async setLicense(license: string) {
-      try {
-        await pluginStore.set({
-          key: 'license',
-          value: license,
-        });
-        return { success: true };
-      } catch (error) {
-        return { success: false };
-      }
-    },
-    async setDevelopmentUrl(url: string) {
-      try {
-        await pluginStore.set({
-          key: 'developurl',
-          value: url,
-        });
-        return true;
-      } catch (error) {
-        return false;
-      }
-    },
-    async getDevelopmentUrl() {
-      try {
-        const result = await pluginStore.get({ key: 'developurl' });
-        if (typeof result === "string")
-          return result;
-      } catch (error) {
-        
-      }
-      return "";
-    },
-    // Access Token
-    async getToken() {
-      try {
-        const result = await pluginStore.get({ key: 'token' });
-        return { token: result };
-      } catch (error) {
-        return { token: null };
-      }
-    },
-    async generateToken() {
-      const secretKey = crypto.randomBytes(64).toString('hex');
-      await pluginStore.set({
-        key: 'token',
-        value: secretKey,
-      });
-      return { token: secretKey };
-    },
-
-    async getLanguageOptions() {
-      const { license } = await this.getLicense();
-      const url = await this.getTranslationstudioUrl();
-      const response = await fetch(url + '/mappings', {
-        headers: { Authorization: `${license}` },
-      });
-      const responseData = await response.json();
-      return responseData;
-    },
-
-    async exportData(payload: ExportPayload) {
-        const { contentTypeID, entryID, locale } = parsePayload(payload);
-        const contentType = await getContentType(contentTypeID); // schema
-        if (!IsLocalisableSchema(contentType))
-        {
-          return {
-              fields: [],
-              keep: { }
-          }
-        }
-        const entry = await getEntry(contentTypeID, entryID, locale); // data
-        const contentFields = await processEntryFields(entry, contentType.attributes, locale);
-        return transformResponse(contentFields);
-    },
-
-    async importData(payload: ImportPayload) {
-      const { contentTypeID, entryID } = parsePayload(payload);
-      const sourceLocale = payload.source;
-      const targetLocale = payload.target;
-
-      try {
-        const existingEntry = await getEntry(contentTypeID, entryID, targetLocale);
-        const targetSchema = await getContentType(contentTypeID);
-        const data = prepareImportData(payload.document[0].fields, existingEntry, targetSchema);
-        if ((targetSchema.pluginOptions.i18n as any).localized === true) {
-          await updateEntry(
-            contentTypeID,
-            entryID,
-            sourceLocale,
-            targetLocale,
-            data,
-            targetSchema.attributes
-          );
-        }
-        return { success: true };
-      } catch (error) {
-        return { success: false };
-      }
-    },
-
-    async requestTranslation(payload: TranslationRequest) {
-      const { license } = await this.getLicense();
-      const url = await this.getTranslationstudioUrl();
-      const response = await fetch(url + '/translate', {
-        method: 'POST',
-        headers: {
-          Authorization: `${license}`,
-          'Content-Type': 'application/json',
+    const pluginStore = strapi.store({
+        type: 'plugin',
+        name: APP_NAME,
+    });
+    return {
+        // translationstudio Lizenz
+        async getLicense() {
+            const result = await pluginStore.get({ key: 'license' });
+            return { license: result };
         },
-        body: JSON.stringify(payload),
-      });
-      if (response.status === 204) return true;
-    },
-    async getEmail(ctx) {
-      const user = ctx.state.user;
-      if (!user) {
-        return { email: null };
-      }
-      return { email: user.email };
-    },
-    async getLanguages(): Promise<LocaleMap> {
-      try {
-        const locales: StrapiLocale[] = await strapi.plugin('i18n').service('locales').find();
-        // Transform to translationstudios format
-        const localeMap: LocaleMap = {};
-        locales.forEach((locale) => {
-          localeMap[locale.code] = locale.name;
-        });
-        return localeMap;
-      } catch (error) {
-        return {};
-      }
-    },
-    async ping(): Promise<void> {
-      return;
-    },
-    async getEntryData(contentTypeID, entryID, locale) {
-      const entry = await getEntry(contentTypeID, entryID, locale);
-      return entry;
-    },
-  };
+        async getTranslationstudioUrl() {
+            try {
+                const result = await pluginStore.get({ key: 'developurl' });
+                if (typeof result === "string" && result !== "")
+                    return result;
+            }
+            catch (err) {
+                strapi.log.warn(err);
+            }
+            return TRANSLATIONTUDIO_URL;
+        },
+        async setLicense(license: string) {
+            try {
+                await pluginStore.set({
+                    key: 'license',
+                    value: license,
+                });
+                return { success: true };
+            } catch (error) {
+                return { success: false };
+            }
+        },
+        async setDevelopmentUrl(url: string) {
+            try {
+                await pluginStore.set({
+                    key: 'developurl',
+                    value: url,
+                });
+                return true;
+            } catch (error) {
+                return false;
+            }
+        },
+        async getDevelopmentUrl() {
+            try {
+                const result = await pluginStore.get({ key: 'developurl' });
+                if (typeof result === "string")
+                    return result;
+            } catch (error) {
+
+            }
+            return "";
+        },
+        // Access Token
+        async getToken() {
+            try {
+                const result = await pluginStore.get({ key: 'token' });
+                return { token: result };
+            } catch (error) {
+                return { token: null };
+            }
+        },
+        async generateToken() {
+            const secretKey = crypto.randomBytes(64).toString('hex');
+            await pluginStore.set({
+                key: 'token',
+                value: secretKey,
+            });
+            return { token: secretKey };
+        },
+
+        async getLanguageOptions() {
+            const { license } = await this.getLicense();
+            const url = await this.getTranslationstudioUrl();
+            const response = await fetch(url + '/mappings', {
+                headers: { Authorization: `${license}` },
+            });
+            const responseData = await response.json();
+            return responseData;
+        },
+
+        async exportData(payload: ExportPayload) {
+            const { contentTypeID, entryID, locale } = parsePayload(payload);
+            const contentType = await getContentType(contentTypeID); // schema
+            if (!IsLocalisableSchema(contentType)) {
+                return {
+                    fields: [],
+                    keep: {}
+                }
+            }
+            const entry = await getEntry(contentTypeID, entryID, locale); // data
+            const contentFields = await processEntryFields(entry, contentType.attributes, locale);
+            return transformResponse(contentFields);
+        },
+
+        async importData(payload: ImportPayload) {
+            const { contentTypeID, entryID } = parsePayload(payload);
+            const sourceLocale = payload.source;
+            const targetLocale = payload.target;
+
+            try {
+                const existingEntry = await getEntry(contentTypeID, entryID, targetLocale);
+                const targetSchema = await getContentType(contentTypeID);
+                const data = prepareImportData(payload.document[0].fields, existingEntry, targetSchema);
+                if ((targetSchema.pluginOptions.i18n as any).localized === true) {
+                    await updateEntry(
+                        contentTypeID,
+                        entryID,
+                        sourceLocale,
+                        targetLocale,
+                        data,
+                        targetSchema.attributes
+                    );
+                }
+                return { success: true };
+            } catch (error) {
+                return { success: false };
+            }
+        },
+
+        async requestTranslation(payload: TranslationRequest) {
+            const { license } = await this.getLicense();
+            const url = await this.getTranslationstudioUrl();
+            const response = await fetch(url + '/translate', {
+                method: 'POST',
+                headers: {
+                    Authorization: `${license}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+            if (response.status === 204) return true;
+        },
+        async getEmail(ctx) {
+            const user = ctx.state.user;
+            if (!user) {
+                return { email: null };
+            }
+            return { email: user.email };
+        },
+        async getLanguages(): Promise<LocaleMap> {
+            try {
+                const locales: StrapiLocale[] = await strapi.plugin('i18n').service('locales').find();
+                // Transform to translationstudios format
+                const localeMap: LocaleMap = {};
+                locales.forEach((locale) => {
+                    localeMap[locale.code] = locale.name;
+                });
+                return localeMap;
+            } catch (error) {
+                return {};
+            }
+        },
+        async ping(): Promise<void> {
+            return;
+        },
+        async getEntryData(contentTypeID, entryID, locale) {
+            const entry = await getEntry(contentTypeID, entryID, locale);
+            return entry;
+        },
+    };
 };
 
 export default service;
