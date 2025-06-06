@@ -27,7 +27,7 @@ import getContentType from './functions/exportData/getContentType';
 import parsePayload from './functions/exportData/parsePayload';
 import getEntry from './functions/exportData/getEntry';
 import transformResponse from './functions/exportData/transformResponse';
-import processEntryFields from './functions/exportData/processEntryFields';
+import processEntryFields, { IsLocalisableSchema } from './functions/exportData/processEntryFields';
 import { updateEntry } from './functions/importData/updateEntry';
 import { prepareImportData } from './functions/importData/prepareImportData';
 
@@ -122,6 +122,13 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
     async exportData(payload: ExportPayload) {
         const { contentTypeID, entryID, locale } = parsePayload(payload);
         const contentType = await getContentType(contentTypeID); // schema
+        if (!IsLocalisableSchema(contentType))
+        {
+          return {
+              fields: [],
+              keep: { }
+          }
+        }
         const entry = await getEntry(contentTypeID, entryID, locale); // data
         const contentFields = await processEntryFields(entry, contentType.attributes, locale);
         return transformResponse(contentFields);

@@ -104,6 +104,11 @@ const processRegularField = (key: string, value: any, fieldSchema: any):Translat
     };
 };
 
+export function IsLocalisableSchema(schema:any)
+{
+    return schema?.pluginOptions?.i18n?.localized === true;
+}
+
 const processEntryFields = async (entry: any, schema: any, locale: string): Promise<ExportedDocumentFields> => {
     const contentFields = [];
     const staticContent:any = { };
