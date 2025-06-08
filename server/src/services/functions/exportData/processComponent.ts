@@ -19,21 +19,28 @@ import {
     TranslationstudioTranslatable,
     FieldSchema,
 } from "../../../../../Types";
-import { IStrapiComponentSchemaMap, IStrapiSchemaEntry } from "./getContentType";
+import { IStrapiComponentSchemaMap, IStrapiSchemaEntry, IStrapiSchemaEntryAttributes } from "./getContentType";
 import jsonToHtml from "./jsonToHtml";
 import * as crypto from "crypto";
 
-const processComponent = async (
+const Logger = {
+    log: typeof strapi !== "undefined" ? strapi.log : console,
+    info: (val:any) => Logger.log.info(val),
+    warn: (val:any) => Logger.log.warn(val),
+    error: (val:any) => Logger.log.error(val),
+    debug: (val:any) => Logger.log.debug(val)
+}
+
+export default async function processComponent(
     fieldName: string,
-    componentName: string,
     value: any,
-    schemaName: string,
-    componentId: number | undefined,
     componentSchema: IStrapiSchemaEntry,
     schemata: IStrapiComponentSchemaMap
-): Promise<TranslationstudioTranslatable[]> => {
+): Promise<TranslationstudioTranslatable[]> 
+{
 
     const contentFields: TranslationstudioTranslatable[] = [];
+    Logger.info("Processing dynamic field " + fieldName);
 
     if (!componentSchema || !componentSchema.attributes)
         return [];
@@ -41,30 +48,12 @@ const processComponent = async (
     const schemaAttributes = componentSchema.attributes || {};
     const dataToProcess = value || {};
 
-    // repeatable component
-    if (Array.isArray(dataToProcess)) {
-        for (const item of dataToProcess) {
-            const processedFields = await processComponentFields(
-                item,
-                schemaAttributes,
-                fieldName,
-                componentName,
-                schemaName,
-                item.id,
-                schemata
-            );
-            if (processedFields.length > 0)
-                contentFields.push(...processedFields);
-        }
-    } else {
-        // single component
+    const candidates = Array.isArray(dataToProcess) ? dataToProcess : [dataToProcess];
+    for (const item of candidates) {
         const processedFields = await processComponentFields(
-            dataToProcess,
+            item,
             schemaAttributes,
             fieldName,
-            componentName,
-            schemaName,
-            componentId,
             schemata
         );
         if (processedFields.length > 0)
@@ -93,9 +82,6 @@ const buildTranslatable = (
     key: string,
     fieldSchema: FieldSchema,
     value: string,
-    parentPath: string[],
-    componentId: number | undefined,
-    schemaName: string,
     uuid = ""
 ): TranslationstudioTranslatable => {
     return {
@@ -109,15 +95,13 @@ const buildTranslatable = (
 
 const processComponentFields = async (
     componentData: any,
-    schema: Record<string, FieldSchema>,
+    schema: IStrapiSchemaEntryAttributes,
     parentField: string,
-    componentName: string,
-    schemaName: string,
-    componentId: number | number,
     schemata: IStrapiComponentSchemaMap
 ): Promise<TranslationstudioTranslatable[]> => {
+
     const contentFields: TranslationstudioTranslatable[] = [];
-    const parentPath = parentField.split(".");
+    const uuid = crypto.randomUUID();
     for (const [key, fieldSchema] of Object.entries(schema)) 
     {
         if (shouldSkipField(key, fieldSchema)) continue;
@@ -126,49 +110,42 @@ const processComponentFields = async (
         if (!value)
             continue;
 
-        const componentName = value?.__component;
-        if (!componentName) continue;
+        if (fieldSchema.type === "component") 
+        {
+            if (!value.__component) 
+                continue;
 
-        const schema = schemata[componentName];
-        if (!schema) continue;
-
-        const fieldPath = `${parentField}.${key}`;
-        if (fieldSchema.type === "component") {
-            if (!fieldSchema.component) continue;
+            const targetSchema = schemata[value.__component];
+            if (!targetSchema)
+                continue;
 
             const nestedFields = await processComponent(
-                fieldPath,
-                fieldSchema.component,
+                `${parentField}.${key}`,
                 value,
-                fieldSchema.component,
-                value?.id,
-                schema,
+                targetSchema,
                 schemata
             );
+
             if (nestedFields.length > 0)
                 contentFields.push(...nestedFields);
+
             continue;
         }
 
         if (!isTranslatableField(fieldSchema.type)) continue;
         if (value === null || value === undefined || value === "") continue;
 
-        const uuid = crypto.randomUUID();
         const translatedValue = getTranslatedValue(fieldSchema.type, value);
         const translatable = buildTranslatable(
             key,
             fieldSchema,
             translatedValue,
-            parentPath,
-            componentId,
-            schemaName
+            uuid
         );
 
-        value.__tsuid = uuid;
+        componentData.__tsuid = uuid;
         contentFields.push(translatable);
     }
 
     return contentFields;
 };
-
-export default processComponent;

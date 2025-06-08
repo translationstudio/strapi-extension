@@ -123,13 +123,5 @@ export default [
     config: {
       policies: [],
     },
-  },
-  {
-    method: 'POST',
-    path: '/entrydata',
-    handler: 'controller.getEntryData',
-    config: {
-      policies: [],
-    },
-  },
+  }
 ];

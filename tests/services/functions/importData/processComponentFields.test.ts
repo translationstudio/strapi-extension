@@ -1,5 +1,5 @@
-import { processComponentFields } from '../../../../../server/src/services/functions/importData/processComponentFields';
-import { TranslationstudioTranslatable } from '../../../../../Types';
+import { processComponentFields } from '../../../../server/src/services/functions/importData/processComponentFields';
+import { TranslationstudioTranslatable } from '../../../../Types';
 
 describe('processComponentFields', () => {
   it('should process non-repeatable component fields', () => {

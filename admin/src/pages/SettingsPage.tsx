@@ -53,7 +53,6 @@ async function loadDevUrl(fnGet: Function): Promise<string> {
 async function updateDevlUrl(fnPost: Function, url: string): Promise<boolean> {
     try {
         const response = await fnPost('/translationstudio/devurl', { url: url });
-        console.log(response.status)
         if (typeof response.data?.success === "boolean")
             return response.data.success;
     }

@@ -124,14 +124,28 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       ctx.status = 400;
       return;
     }
-    const payload = JSON.parse(ctx.request.body);
-    const result = await strapi.plugin(APP_NAME).service('service').importData(payload);
-    ctx.body = result;
+
+    try {
+      const payload = typeof ctx.request.body === "object" ? ctx.request.body : JSON.parse(ctx.request.body);
+
+      strapi.log.info("Importing");
+      const result = await strapi.plugin(APP_NAME).service('service').importData(payload);
+      ctx.body = { success: result };
+      ctx.status = 200;
+      return;
+    }
+    catch (err)
+    {
+      strapi.log.error(err.message ?? err);
+    }
+
+    ctx.body = { message: "Could not perform import" };
+    ctx.status = 500;
+
   },
   async ping(ctx) {
-    const result = await strapi.plugin(APP_NAME).service('service').ping();
+    await strapi.plugin(APP_NAME).service('service').ping();
     ctx.status = 204;
-    ctx.body = result;
   },
   async getLanguages(ctx) {
     if (!(await this.validateToken(ctx))) {
@@ -153,23 +167,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
   async getEmail(ctx) {
     const result = await strapi.plugin(APP_NAME).service('service').getEmail(ctx);
     ctx.body = result;
-  },
-  async getEntryData(ctx) {
-    const { uid, locale } = ctx.request.body;
-    if (!uid) {
-      return ctx.badRequest('Missing uid parameter');
-    }
-    try {
-      const [contentTypeID, entryID] = uid.split('#');
-      const entry = await strapi
-        .plugin(APP_NAME)
-        .service('service')
-        .getEntryData(contentTypeID, entryID, locale);
-      return entry;
-    } catch (error) {
-      return ctx.badRequest('Failed to get entry data', { error: error.message });
-    }
-  },
+  }
 });
 
 export default controller;

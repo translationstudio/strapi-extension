@@ -1,0 +1,511 @@
+{
+    "entry": {
+        "kind": "collectionType",
+        "collectionName": "translationstudios",
+        "info": {
+            "singularName": "translationstudio",
+            "pluralName": "translationstudios",
+            "displayName": "translationstudio",
+            "description": ""
+        },
+        "options": {
+            "draftAndPublish": true
+        },
+        "pluginOptions": {
+            "i18n": {
+                "localized": true
+            }
+        },
+        "attributes": {
+            "Title": {
+                "type": "string",
+                "pluginOptions": {
+                    "i18n": {
+                        "localized": true
+                    }
+                }
+            },
+            "CompanyName": {
+                "type": "string"
+            },
+            "CompanyAddress": {
+                "type": "string"
+            },
+            "CompanyZip": {
+                "type": "string"
+            },
+            "CompanyCity": {
+                "type": "string",
+                "pluginOptions": {
+                    "i18n": {
+                        "localized": true
+                    }
+                }
+            },
+            "CompanyCountry": {
+                "type": "string",
+                "pluginOptions": {
+                    "i18n": {
+                        "localized": true
+                    }
+                }
+            },
+            "Content": {
+                "type": "dynamiczone",
+                "components": [
+                    "content.text-with-video",
+                    "content.tech-details",
+                    "content.integrations",
+                    "content.hero",
+                    "content.text-with-logo",
+                    "content.contact"
+                ],
+                "pluginOptions": {
+                    "i18n": {
+                        "localized": true
+                    }
+                }
+            },
+            "CompanyTel": {
+                "type": "string"
+            },
+            "CompanyFax": {
+                "type": "string"
+            },
+            "LabelImprint": {
+                "type": "string",
+                "pluginOptions": {
+                    "i18n": {
+                        "localized": true
+                    }
+                }
+            },
+            "LabelPrivacy": {
+                "type": "string",
+                "pluginOptions": {
+                    "i18n": {
+                        "localized": true
+                    }
+                }
+            },
+            "createdAt": {
+                "type": "datetime"
+            },
+            "updatedAt": {
+                "type": "datetime"
+            },
+            "publishedAt": {
+                "type": "datetime",
+                "configurable": false,
+                "writable": true,
+                "visible": false
+            },
+            "createdBy": {
+                "type": "relation",
+                "relation": "oneToOne",
+                "target": "admin::user",
+                "configurable": false,
+                "writable": false,
+                "visible": false,
+                "useJoinTable": false,
+                "private": true
+            },
+            "updatedBy": {
+                "type": "relation",
+                "relation": "oneToOne",
+                "target": "admin::user",
+                "configurable": false,
+                "writable": false,
+                "visible": false,
+                "useJoinTable": false,
+                "private": true
+            },
+            "locale": {
+                "writable": true,
+                "private": false,
+                "configurable": false,
+                "visible": false,
+                "type": "string"
+            },
+            "localizations": {
+                "type": "relation",
+                "relation": "oneToMany",
+                "target": "api::translationstudio.translationstudio",
+                "writable": false,
+                "private": false,
+                "configurable": false,
+                "visible": false,
+                "unstable_virtual": true,
+                "joinColumn": {
+                    "name": "document_id",
+                    "referencedColumn": "document_id",
+                    "referencedTable": "translationstudios"
+                }
+            }
+        },
+        "apiName": "translationstudio",
+        "globalId": "Translationstudio",
+        "uid": "api::translationstudio.translationstudio",
+        "modelType": "contentType",
+        "__schema__": {
+            "collectionName": "translationstudios",
+            "info": {
+                "singularName": "translationstudio",
+                "pluralName": "translationstudios",
+                "displayName": "translationstudio",
+                "description": ""
+            },
+            "options": {
+                "draftAndPublish": true
+            },
+            "pluginOptions": {
+                "i18n": {
+                    "localized": true
+                }
+            },
+            "attributes": {
+                "Title": {
+                    "type": "string",
+                    "pluginOptions": {
+                        "i18n": {
+                            "localized": true
+                        }
+                    }
+                },
+                "CompanyName": {
+                    "type": "string"
+                },
+                "CompanyAddress": {
+                    "type": "string"
+                },
+                "CompanyZip": {
+                    "type": "string"
+                },
+                "CompanyCity": {
+                    "type": "string",
+                    "pluginOptions": {
+                        "i18n": {
+                            "localized": true
+                        }
+                    }
+                },
+                "CompanyCountry": {
+                    "type": "string",
+                    "pluginOptions": {
+                        "i18n": {
+                            "localized": true
+                        }
+                    }
+                },
+                "Content": {
+                    "type": "dynamiczone",
+                    "components": [
+                        "content.text-with-video",
+                        "content.tech-details",
+                        "content.integrations",
+                        "content.hero",
+                        "content.text-with-logo",
+                        "content.contact"
+                    ],
+                    "pluginOptions": {
+                        "i18n": {
+                            "localized": true
+                        }
+                    }
+                },
+                "CompanyTel": {
+                    "type": "string"
+                },
+                "CompanyFax": {
+                    "type": "string"
+                },
+                "LabelImprint": {
+                    "type": "string",
+                    "pluginOptions": {
+                        "i18n": {
+                            "localized": true
+                        }
+                    }
+                },
+                "LabelPrivacy": {
+                    "type": "string",
+                    "pluginOptions": {
+                        "i18n": {
+                            "localized": true
+                        }
+                    }
+                }
+            },
+            "kind": "collectionType"
+        },
+        "modelName": "translationstudio",
+        "actions": {},
+        "lifecycles": {}
+    },
+    "components": {
+        "content.text-with-video": {
+            "collectionName": "components_content_text_with_videos",
+            "info": {
+                "displayName": "Text with Video"
+            },
+            "options": {},
+            "attributes": {
+                "Title": {
+                    "type": "string"
+                },
+                "Teaser": {
+                    "type": "string"
+                },
+                "Text": {
+                    "type": "string"
+                }
+            },
+            "__filename__": "text-with-video.json",
+            "__schema__": {
+                "collectionName": "components_content_text_with_videos",
+                "info": {
+                    "displayName": "Text with Video"
+                },
+                "options": {},
+                "attributes": {
+                    "Title": {
+                        "type": "string"
+                    },
+                    "Teaser": {
+                        "type": "string"
+                    },
+                    "Text": {
+                        "type": "string"
+                    }
+                },
+                "__filename__": "text-with-video.json"
+            },
+            "uid": "content.text-with-video",
+            "category": "content",
+            "modelType": "component",
+            "modelName": "text-with-video",
+            "globalId": "ComponentContentTextWithVideo"
+        },
+        "content.tech-details": {
+            "collectionName": "components_content_tech_details",
+            "info": {
+                "displayName": "Tech Details"
+            },
+            "options": {},
+            "attributes": {
+                "Title": {
+                    "type": "string"
+                },
+                "Text": {
+                    "type": "string"
+                }
+            },
+            "__filename__": "tech-details.json",
+            "__schema__": {
+                "collectionName": "components_content_tech_details",
+                "info": {
+                    "displayName": "Tech Details"
+                },
+                "options": {},
+                "attributes": {
+                    "Title": {
+                        "type": "string"
+                    },
+                    "Text": {
+                        "type": "string"
+                    }
+                },
+                "__filename__": "tech-details.json"
+            },
+            "uid": "content.tech-details",
+            "category": "content",
+            "modelType": "component",
+            "modelName": "tech-details",
+            "globalId": "ComponentContentTechDetails"
+        },
+        "content.integrations": {
+            "collectionName": "components_content_integrations",
+            "info": {
+                "displayName": "Integrations"
+            },
+            "options": {},
+            "attributes": {
+                "Title": {
+                    "type": "string"
+                },
+                "Text": {
+                    "type": "text"
+                },
+                "Listing": {
+                    "type": "enumeration",
+                    "enum": [
+                        "SOURCE SYSTEMS",
+                        "AI",
+                        "TMS"
+                    ],
+                    "required": true
+                }
+            },
+            "__filename__": "integrations.json",
+            "__schema__": {
+                "collectionName": "components_content_integrations",
+                "info": {
+                    "displayName": "Integrations"
+                },
+                "options": {},
+                "attributes": {
+                    "Title": {
+                        "type": "string"
+                    },
+                    "Text": {
+                        "type": "text"
+                    },
+                    "Listing": {
+                        "type": "enumeration",
+                        "enum": [
+                            "SOURCE SYSTEMS",
+                            "AI",
+                            "TMS"
+                        ],
+                        "required": true
+                    }
+                },
+                "__filename__": "integrations.json"
+            },
+            "uid": "content.integrations",
+            "category": "content",
+            "modelType": "component",
+            "modelName": "integrations",
+            "globalId": "ComponentContentIntegrations"
+        },
+        "content.hero": {
+            "collectionName": "components_content_heroes",
+            "info": {
+                "displayName": "Hero"
+            },
+            "options": {},
+            "attributes": {
+                "Title": {
+                    "type": "string"
+                },
+                "Text": {
+                    "type": "string"
+                }
+            },
+            "__filename__": "hero.json",
+            "__schema__": {
+                "collectionName": "components_content_heroes",
+                "info": {
+                    "displayName": "Hero"
+                },
+                "options": {},
+                "attributes": {
+                    "Title": {
+                        "type": "string"
+                    },
+                    "Text": {
+                        "type": "string"
+                    }
+                },
+                "__filename__": "hero.json"
+            },
+            "uid": "content.hero",
+            "category": "content",
+            "modelType": "component",
+            "modelName": "hero",
+            "globalId": "ComponentContentHero"
+        },
+        "content.text-with-logo": {
+            "collectionName": "components_content_text_with_logos",
+            "info": {
+                "displayName": "Text with Logo"
+            },
+            "options": {},
+            "attributes": {
+                "Title": {
+                    "type": "string"
+                },
+                "Teaser": {
+                    "type": "text"
+                },
+                "Text": {
+                    "type": "blocks"
+                }
+            },
+            "__filename__": "text-with-logo.json",
+            "__schema__": {
+                "collectionName": "components_content_text_with_logos",
+                "info": {
+                    "displayName": "Text with Logo"
+                },
+                "options": {},
+                "attributes": {
+                    "Title": {
+                        "type": "string"
+                    },
+                    "Teaser": {
+                        "type": "text"
+                    },
+                    "Text": {
+                        "type": "blocks"
+                    }
+                },
+                "__filename__": "text-with-logo.json"
+            },
+            "uid": "content.text-with-logo",
+            "category": "content",
+            "modelType": "component",
+            "modelName": "text-with-logo",
+            "globalId": "ComponentContentTextWithLogo"
+        },
+        "content.contact": {
+            "collectionName": "components_content_contacts",
+            "info": {
+                "displayName": "Contact"
+            },
+            "options": {},
+            "attributes": {
+                "Title": {
+                    "type": "string"
+                },
+                "Text": {
+                    "type": "string"
+                },
+                "Tel": {
+                    "type": "string"
+                },
+                "Mail": {
+                    "type": "string"
+                }
+            },
+            "__filename__": "contact.json",
+            "__schema__": {
+                "collectionName": "components_content_contacts",
+                "info": {
+                    "displayName": "Contact"
+                },
+                "options": {},
+                "attributes": {
+                    "Title": {
+                        "type": "string"
+                    },
+                    "Text": {
+                        "type": "string"
+                    },
+                    "Tel": {
+                        "type": "string"
+                    },
+                    "Mail": {
+                        "type": "string"
+                    }
+                },
+                "__filename__": "contact.json"
+            },
+            "uid": "content.contact",
+            "category": "content",
+            "modelType": "component",
+            "modelName": "contact",
+            "globalId": "ComponentContentContact"
+        }
+    }
+}

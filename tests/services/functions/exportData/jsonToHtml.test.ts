@@ -1,4 +1,4 @@
-import jsonToHtml from '../../../../../server/src/services/functions/exportData/jsonToHtml';
+import jsonToHtml from '../../../../server/src/services/functions/exportData/jsonToHtml';
 
 describe('jsonToHtml', () => {
   test('handles empty or invalid input', () => {

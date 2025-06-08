@@ -1,4 +1,4 @@
-import extractRichtextContent from '../../../../../server/src/services/functions/exportData/extractRichtextContent';
+import extractRichtextContent from '../../../../server/src/services/functions/exportData/extractRichtextContent';
 import { describe, test, expect } from '@jest/globals';
 
 describe('extractRichtextContent', () => {

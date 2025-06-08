@@ -1,4 +1,4 @@
-import htmlToJson from '../../../../../server/src/services/functions/importData/htmlToJson';
+import htmlToJson from '../../../../server/src/services/functions/importData/htmlToJson';
 
 describe('htmlToJson', () => {
   test('should parse headings correctly', () => {

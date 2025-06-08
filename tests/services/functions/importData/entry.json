@@ -1,0 +1,94 @@
+{
+    "id": 1,
+    "documentId": "sudkt70lgjexjkm9dko975x9",
+    "Title": "translationstudio",
+    "createdAt": "2025-05-27T11:54:22.819Z",
+    "updatedAt": "2025-05-27T13:54:19.110Z",
+    "publishedAt": null,
+    "locale": "en",
+    "CompanyName": "I-D Media GmbH",
+    "CompanyAddress": "Kaiser-Wilhelm-Ring 26",
+    "CompanyZip": "50672",
+    "CompanyCity": "Cologne",
+    "CompanyCountry": "Germany",
+    "CompanyTel": "+49 221 399 603 0",
+    "CompanyFax": "+49 221 399 603 19",
+    "LabelImprint": "Imprint",
+    "LabelPrivacy": "Privacy Policy",
+    "Content": [
+        {
+            "__component": "content.text-with-logo",
+            "id": 1,
+            "Title": "translationstudio",
+            "Teaser": "Benefit from the advantages of professional translation management and translation automation.",
+            "Text": [
+                {
+                    "type": "paragraph",
+                    "children": [
+                        {
+                            "type": "text",
+                            "text": "translationstudio connects CMS, DXP, DAM or PIM with translation management systems (TMS)."
+                        }
+                    ]
+                },
+                {
+                    "type": "paragraph",
+                    "children": [
+                        {
+                            "type": "text",
+                            "text": "Editors can easily translate content into the desired target languages and reimport the translated content ... completely automatically."
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "__component": "content.text-with-video",
+            "id": 1,
+            "Title": "It couldn't be simpler",
+            "Teaser": "translationstudio is easy as pie",
+            "Text": "The editors have enough to do and translations can be commissioned without any expert knowledge."
+        },
+        {
+            "__component": "content.integrations",
+            "id": 1,
+            "Title": "Consistent translations for your entire DXP!",
+            "Text": "With translationstudio, you can integrate translations into your DXP in a consistent and coherent way: whether CMS, DAM or PIM, translationstudio connects them with leading translation management systems “out of the box”. We also integrate proprietary interfaces or special systems from translation service providers.",
+            "Listing": "SOURCE SYSTEMS"
+        },
+        {
+            "__component": "content.integrations",
+            "id": 2,
+            "Title": "Machine Translations",
+            "Text": "translationstudio connects to market leading machine translation services out of the box. Custom AI translations are also possible, of course.",
+            "Listing": "AI"
+        },
+        {
+            "__component": "content.integrations",
+            "id": 3,
+            "Title": "Translation Memory Systems",
+            "Text": "Translators work most efficient using their familiar professional tools. translationstudio connects with them, out of the box.",
+            "Listing": "TMS"
+        },
+        {
+            "__component": "content.hero",
+            "id": 1,
+            "Title": "Concentrate on what you do best",
+            "Text": "and leave the tedious and time-consuming tasks to translationstudio."
+        },
+        {
+            "__component": "content.tech-details",
+            "id": 1,
+            "Title": "Technical details",
+            "Text": "You can find all the technical details about translationstudio on our product website"
+        },
+        {
+            "__component": "content.contact",
+            "id": 1,
+            "Title": "Let us show you",
+            "Text": "We demonstrate translationstudio at any time - no strings attached.",
+            "Tel": "+49 221 399 603 0",
+            "Mail": "translationstudio@idmedia.com"
+        }
+    ]
+}

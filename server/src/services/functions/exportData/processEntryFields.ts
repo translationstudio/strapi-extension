@@ -20,6 +20,14 @@ import processComponent from './processComponent';
 import { TranslationstudioTranslatable } from '../../../../../Types';
 import { IStrapiComponentSchemaMap, IStrapiSchema, IStrapiSchemaEntry, IStrapiSchemaEntryAttributes, IStrapiSchemaField } from './getContentType';
 
+const Logger = {
+    log: typeof strapi !== "undefined" ? strapi.log : console,
+    info: (val:any) => Logger.log.info(val),
+    warn: (val:any) => Logger.log.warn(val),
+    error: (val:any) => Logger.log.error(val),
+    debug: (val:any) => Logger.log.debug(val)
+}
+
 const DEFAULT_FIELDS = new Set([
     'id',
     'documentId',
@@ -56,10 +64,7 @@ const processDynamicZone = async (key: string, value: any[], schemata: IStrapiCo
 
         const fields = await processComponent(
             key,
-            componentName,
             component,
-            componentName,
-            component.id,
             schema,
             schemata
         );
@@ -84,14 +89,12 @@ const processComponentField = async (key: string, value: any, fieldSchema: any, 
 
         const fields = await processComponent(
             key,
-            fieldSchema.component,
             component,
-            fieldSchema.component,
-            component.id,
             schema,
             schemata
         );
-        results.push(...fields);
+        if (fields.length > 0)
+            results.push(...fields);
     }
 
     return results;
@@ -130,19 +133,23 @@ const processEntryFields = async (entry: any, schemaData: IStrapiSchema, _locale
 
         /** skip non-localisable fields */
         if (!fieldSchema || !IsLocalisedField(fieldSchema))
+        {
+            Logger.debug("SKipping non-local field " + key);
             continue;
+        }
 
         if (isSimpleTranslatableField(fieldSchema)) {
+            Logger.debug("Processing simple field "+ key);
             const translatedField = processRegularField(key, value, fieldSchema);
             contentFields.push(translatedField);
 
-            strapi.log.info("Added translatable simple field " + key)
             continue;
         }
 
         const zoneInfo = isDynamicZone(fieldSchema, value);
         if (zoneInfo.isZone) {
             if (zoneInfo.hasContent) {
+                Logger.debug("Processing dynamic zone field "+ key);
 
                 const zoneFields = await processDynamicZone(key, value as any[], schemaData.components);
                 contentFields.push(...zoneFields);
@@ -160,6 +167,7 @@ const processEntryFields = async (entry: any, schemaData: IStrapiSchema, _locale
         }
     }
 
+    Logger.info("Process completed");
     return {
         fields: contentFields,
         keep: staticContent

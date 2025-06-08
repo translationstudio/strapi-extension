@@ -1,4 +1,4 @@
-import { parseNewValuesIntoStructure } from '../../../../../server/src/services/functions/importData/parseNewValuesIntoStructure';
+import { parseNewValuesIntoStructure } from '../../../../server/src/services/functions/importData/parseNewValuesIntoStructure';
 
 describe('parseNewValuesIntoStructure', () => {
   // Test case 1: Standard case with matching number of newValues and children

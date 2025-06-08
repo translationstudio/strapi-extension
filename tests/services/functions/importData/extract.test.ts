@@ -1,4 +1,4 @@
-import { extractContentAndEntryIds } from '../../../../../server/src/services/functions/importData/extract';
+import { extractContentAndEntryIds } from '../../../../server/src/services/functions/importData/extract';
 
 describe('extract functions', () => {
   describe('extractContentAndEntryIds', () => {

@@ -15,95 +15,116 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-import htmlToJson from './htmlToJson';
+import { IStrapiSchema, IStrapiSchemaEntry, IStrapiSchemaEntryAttributes } from '../exportData/getContentType';
 
-export async function updateEntry(
-  contentTypeID: string,
-  entryID: string,
-  sourceLocale: string,
-  targetLocale: string,
-  data: Record<string, any>,
-  attributes: Record<string, any>
-) {
-  if (!entryID) {
-    const singleTypeData = await strapi.documents(contentTypeID as any).findFirst();
-    entryID = singleTypeData.documentId;
-  }
-
-  const originalEntry = await strapi.documents(contentTypeID as any).findFirst({
-    documentId: entryID,
-    locale: sourceLocale,
-  });
-
-  // Process data recursively to handle blocks in all nested structures
-  const processedData = processDataRecursively(data);
-
-  // Validate blocks data before update
-  for (const [key, value] of Object.entries(processedData)) {
-    if (attributes[key]?.type === 'blocks' && typeof value === 'string') {
-      strapi.log.warn(`Field ${key} is a blocks field but received string value. Converting to blocks format.`);
-      // Use htmlToJson instead of creating a simple paragraph
-      processedData[key] = htmlToJson(value);
-    }
-  }
-
-  // Filter out non-localized fields
-  const localizedData: Record<string, any> = {};
-
-  for (const field in processedData) {
-    // Check if field exists in attributes and is localized
-    if (
-      attributes[field] &&
-      (!attributes[field].pluginOptions?.i18n ||
-        attributes[field].pluginOptions?.i18n?.localized !== false)
-    ) {
-      localizedData[field] = processedData[field];
-    }
-  }
-
-  const newEntry = await strapi.documents(contentTypeID as any).update({
-    documentId: entryID,
-    locale: targetLocale,
-    data: localizedData,
-  });
-
-  if (originalEntry.publishedAt !== null) {
-    await strapi.documents(contentTypeID as any).publish({
-      documentId: entryID,
-      locale: sourceLocale,
-    });
-  }
+const Logger = {
+    log: typeof strapi !== "undefined" ? strapi.log : console,
+    info: (val: any) => Logger.log.info(val),
+    warn: (val: any) => Logger.log.warn(val),
+    error: (val: any) => Logger.log.error(val),
+    debug: (val: any) => Logger.log.debug(val)
 }
 
-export function processDataRecursively(data: any, schema?: any): any {
-  if (!data || typeof data !== 'object') {
-    return data;
-  }
+const DEFAULT_FIELDS = [
+    "id",
+    "documentId",
+    "createdAt",
+    "updatedAt", ,
+    "createdBy",
+    "updatedBy",
+    "publishedAt",
+    "locale",
+    "localizations"
+];
 
-  // Handle arrays
-  if (Array.isArray(data)) {
-    if (data[0]?.fields) {
-      const processedFields = {};
-
-      for (const fieldData of data[0].fields) {
-        if (fieldData.realType === 'blocks') {
-          if (fieldData.translatableValue?.[0]) {
-            // Convert HTML to blocks structure
-            processedFields[fieldData.field] = htmlToJson(fieldData.translatableValue[0]);
-          }
-        } else {
-          processedFields[fieldData.field] = fieldData.translatableValue?.[0] || null;
-        }
-      }
-      return processedFields;
+const getContentFields = function(schema:IStrapiSchemaEntryAttributes)
+{
+    const nullFields:string[] = [];
+    for (let field in schema)
+    {
+        if (!DEFAULT_FIELDS.includes(field))
+            nullFields.push(field);
     }
-    return data.map((item) => processDataRecursively(item, schema));
-  }
+    return nullFields;
+}
 
-  // Process object properties
-  const result = {};
-  for (const key in data) {
-    result[key] = processDataRecursively(data[key], schema);
-  }
-  return result;
+const getInvalidOrNullFields = function(document:any, schema:IStrapiSchemaEntryAttributes)
+{
+    if (!document)
+        return getContentFields(schema);
+
+    const nullFields:string[] = [];
+    let fieldsValid = 0;
+    for (let field in document)
+    {
+        if (DEFAULT_FIELDS.includes(field))
+            continue;
+
+        if (document[field] === null)
+            nullFields.push(field);
+        else
+            fieldsValid++;
+    }
+
+    /* we have fields other than the default fields and they are invalid */
+    if (nullFields.length > 0 || fieldsValid > 0)
+        return nullFields;
+
+    return getContentFields(schema);
+}
+
+export function appendMissingFields(data: Record<string, any>, sourceEntry: any, targetSchema: IStrapiSchema, targetEntry) {
+
+    const nullFields = getInvalidOrNullFields(targetEntry, targetSchema.entry.attributes)
+    if (nullFields.length === 0)
+        return;
+
+    let count = 0;
+    Logger.info("Adding missing fields to new locale: " + nullFields.join(", "));
+    for (let field of nullFields)
+    {
+        if (data[field])
+        {
+            Logger.info("Field already present: " + field);
+            continue;
+        }
+
+        if (!sourceEntry[field])
+        {
+            Logger.info("No valid source langauge field value for " + field + " - skipping it.");
+            continue;
+        }
+
+        if (!targetSchema.entry.attributes[field])
+        {
+            Logger.warn("Schema does not contain field " + field);
+            continue;
+        }
+
+        Logger.info("Adding missing field and value for " + field);
+        data[field] = sourceEntry[field]
+        count++;
+    }
+
+    if (count > 0)
+        Logger.info(count + " missing fields added.");
+}
+
+
+export async function updateEntry(
+    contentTypeID: string,
+    entryID: string,
+    targetLocale: string,
+    data: Record<string, any>,
+) {
+
+    strapi.log.info("Updating target entry " + contentTypeID + "::" + entryID + " in locale " + targetLocale)
+    const newEntry = await strapi.documents(contentTypeID as any).update({
+        documentId: entryID,
+        locale: targetLocale,
+        data: data,
+    });
+
+    if (!newEntry)
+        throw new Error("Cannot update target entry " + contentTypeID + "::" + entryID + " in locale " + targetLocale);
 }

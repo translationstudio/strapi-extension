@@ -23,18 +23,25 @@ import type {
     StrapiLocale,
     TranslationRequest,
 } from '../../../Types';
-import getContentType from './functions/exportData/getContentType';
+import getContentType, { IStrapiSchema } from './functions/exportData/getContentType';
 import parsePayload from './functions/exportData/parsePayload';
 import getEntry from './functions/exportData/getEntry';
 import transformResponse from './functions/exportData/transformResponse';
 import processEntryFields, { IsLocalisableSchema } from './functions/exportData/processEntryFields';
-import { updateEntry } from './functions/importData/updateEntry';
+import { appendMissingFields, updateEntry } from './functions/importData/updateEntry';
 import { prepareImportData } from './functions/importData/prepareImportData';
-
-const crypto = require('crypto');
+import * as crypto from "crypto";
 
 const TRANSLATIONTUDIO_URL = 'https://strapi.translationstudio.tech';
 const APP_NAME = 'translationstudio';
+
+const Logger = {
+    log: typeof strapi !== "undefined" ? strapi.log : console,
+    info: (val:any) => Logger.log.info(val),
+    warn: (val:any) => Logger.log.warn(val),
+    error: (val:any) => Logger.log.error(val),
+    debug: (val:any) => Logger.log.debug(val)
+}
 
 const service = ({ strapi }: { strapi: Core.Strapi }) => {
     const pluginStore = strapi.store({
@@ -119,7 +126,6 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
         },
 
         async exportData(payload: ExportPayload) {
-            strapi.log.info("export");
             const { contentTypeID, entryID, locale } = parsePayload(payload);
             const contentType = getContentType(contentTypeID); // schema
             if (contentType === null || !IsLocalisableSchema(contentType.entry)) {
@@ -128,7 +134,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
                     keep: {}
                 }
             }
-            strapi.log.info(JSON.stringify(contentType));
+
             const entry = await getEntry(contentTypeID, entryID, locale); // data
             const contentFields = await processEntryFields(entry, contentType, locale);
             return transformResponse(contentFields);
@@ -140,28 +146,41 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
             const targetLocale = payload.target;
 
             try {
-                const existingEntry = await getEntry(contentTypeID, entryID, targetLocale);
+                
+                const sourceEntry = await getEntry(contentTypeID, entryID, sourceLocale);
+                if (sourceEntry == null)
+                    throw new Error("Cannot find source entry " + contentTypeID + "::" + entryID + " in " + sourceLocale);
+
                 const targetSchema = getContentType(contentTypeID);
                 if (targetSchema === null || !IsLocalisableSchema(targetSchema.entry))
                     throw new Error("Cannot find schema");
 
-                const data = prepareImportData(payload.document[0].fields, existingEntry, targetSchema);
-                /*
+                const data = prepareImportData(
+                    payload.document[0].fields, 
+                    payload.document[0].keep ?? { },
+                    sourceEntry,
+                    targetSchema
+                );
+
+                strapi.log.info("Loading target language entry");
+                const targetLocaleEntry = await getEntry(contentTypeID, entryID, targetLocale);
+                appendMissingFields(data, sourceEntry, targetSchema, targetLocaleEntry);
+                
                 await updateEntry(
                     contentTypeID,
                     entryID,
-                    sourceLocale,
                     targetLocale,
-                    data,
-                    targetSchema.attributes
+                    data
                 );
-                */
                 
-                return { success: true };
-            } catch (error) {
+                return true;
+            } 
+            catch (error) 
+            {
                 strapi.log.error(error);
-                return { success: false };
             }
+
+            return false;
         },
 
         async requestTranslation(payload: TranslationRequest) {
@@ -199,11 +218,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
         },
         async ping(): Promise<void> {
             return;
-        },
-        async getEntryData(contentTypeID, entryID, locale) {
-            const entry = await getEntry(contentTypeID, entryID, locale);
-            return entry;
-        },
+        }
     };
 };
 

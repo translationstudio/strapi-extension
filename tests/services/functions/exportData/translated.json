@@ -1,0 +1,310 @@
+{
+    "fields": [
+        {
+            "field": "Title",
+            "type": "text",
+            "translatableValue": [
+                "translationstudio"
+            ],
+            "realType": "string"
+        },
+        {
+            "field": "CompanyCity",
+            "type": "text",
+            "translatableValue": [
+                "Cologne"
+            ],
+            "realType": "string"
+        },
+        {
+            "field": "CompanyCountry",
+            "type": "text",
+            "translatableValue": [
+                "Germany"
+            ],
+            "realType": "string"
+        },
+        {
+            "field": "LabelImprint",
+            "type": "text",
+            "translatableValue": [
+                "Imprint"
+            ],
+            "realType": "string"
+        },
+        {
+            "field": "LabelPrivacy",
+            "type": "text",
+            "translatableValue": [
+                "Privacy Policy"
+            ],
+            "realType": "string"
+        },
+        {
+            "field": "Title",
+            "type": "text",
+            "translatableValue": [
+                "translationstudio"
+            ],
+            "realType": "string",
+            "uuid": "261002a0-db31-40f5-998a-fc61e860384c"
+        },
+        {
+            "field": "Teaser",
+            "type": "text",
+            "translatableValue": [
+                "Benefit from the advantages of professional translation management and translation automation."
+            ],
+            "realType": "text",
+            "uuid": "261002a0-db31-40f5-998a-fc61e860384c"
+        },
+        {
+            "field": "Text",
+            "type": "html",
+            "translatableValue": [
+                "<p>translationstudio connects CMS, DXP, DAM or PIM with translation management systems (TMS).</p><p>Editors can easily translate content into the desired target languages and reimport the translated content ... completely automatically.</p>"
+            ],
+            "realType": "blocks",
+            "uuid": "261002a0-db31-40f5-998a-fc61e860384c"
+        },
+        {
+            "field": "Title",
+            "type": "text",
+            "translatableValue": [
+                "It couldn't be simpler"
+            ],
+            "realType": "string",
+            "uuid": "0621c758-0f77-4c5c-a38b-9ded5c496c12"
+        },
+        {
+            "field": "Teaser",
+            "type": "text",
+            "translatableValue": [
+                "translationstudio is easy as pie"
+            ],
+            "realType": "string",
+            "uuid": "0621c758-0f77-4c5c-a38b-9ded5c496c12"
+        },
+        {
+            "field": "Text",
+            "type": "text",
+            "translatableValue": [
+                "The editors have enough to do and translations can be commissioned without any expert knowledge."
+            ],
+            "realType": "string",
+            "uuid": "0621c758-0f77-4c5c-a38b-9ded5c496c12"
+        },
+        {
+            "field": "Title",
+            "type": "text",
+            "translatableValue": [
+                "Consistent translations for your entire DXP!"
+            ],
+            "realType": "string",
+            "uuid": "4afd8002-f5fc-48c7-b9cb-a66cebaf5f2b"
+        },
+        {
+            "field": "Text",
+            "type": "text",
+            "translatableValue": [
+                "With translationstudio, you can integrate translations into your DXP in a consistent and coherent way: whether CMS, DAM or PIM, translationstudio connects them with leading translation management systems “out of the box”. We also integrate proprietary interfaces or special systems from translation service providers."
+            ],
+            "realType": "text",
+            "uuid": "4afd8002-f5fc-48c7-b9cb-a66cebaf5f2b"
+        },
+        {
+            "field": "Title",
+            "type": "text",
+            "translatableValue": [
+                "Machine Translations"
+            ],
+            "realType": "string",
+            "uuid": "7ca95c8a-9a96-4491-a669-16275b406219"
+        },
+        {
+            "field": "Text",
+            "type": "text",
+            "translatableValue": [
+                "translationstudio connects to market leading machine translation services out of the box. Custom AI translations are also possible, of course."
+            ],
+            "realType": "text",
+            "uuid": "7ca95c8a-9a96-4491-a669-16275b406219"
+        },
+        {
+            "field": "Title",
+            "type": "text",
+            "translatableValue": [
+                "Translation Memory Systems"
+            ],
+            "realType": "string",
+            "uuid": "01e77580-2c58-4f6b-8a20-4f3aba4c82d9"
+        },
+        {
+            "field": "Text",
+            "type": "text",
+            "translatableValue": [
+                "Translators work most efficient using their familiar professional tools. translationstudio connects with them, out of the box."
+            ],
+            "realType": "text",
+            "uuid": "01e77580-2c58-4f6b-8a20-4f3aba4c82d9"
+        },
+        {
+            "field": "Title",
+            "type": "text",
+            "translatableValue": [
+                "Concentrate on what you do best"
+            ],
+            "realType": "string",
+            "uuid": "8cc3f204-a9a5-4ec8-81ab-0b9c3ab65b4c"
+        },
+        {
+            "field": "Text",
+            "type": "text",
+            "translatableValue": [
+                "and leave the tedious and time-consuming tasks to translationstudio."
+            ],
+            "realType": "string",
+            "uuid": "8cc3f204-a9a5-4ec8-81ab-0b9c3ab65b4c"
+        },
+        {
+            "field": "Title",
+            "type": "text",
+            "translatableValue": [
+                "Technical details"
+            ],
+            "realType": "string",
+            "uuid": "d2ea8573-345d-4504-950c-d52898b2f3e4"
+        },
+        {
+            "field": "Text",
+            "type": "text",
+            "translatableValue": [
+                "You can find all the technical details about translationstudio on our product website"
+            ],
+            "realType": "string",
+            "uuid": "d2ea8573-345d-4504-950c-d52898b2f3e4"
+        },
+        {
+            "field": "Title",
+            "type": "text",
+            "translatableValue": [
+                "Let us show you"
+            ],
+            "realType": "string",
+            "uuid": "989316e6-71c6-4423-b77b-40b288fbb71f"
+        },
+        {
+            "field": "Text",
+            "type": "text",
+            "translatableValue": [
+                "We demonstrate translationstudio at any time - no strings attached."
+            ],
+            "realType": "string",
+            "uuid": "989316e6-71c6-4423-b77b-40b288fbb71f"
+        },
+        {
+            "field": "Tel",
+            "type": "text",
+            "translatableValue": [
+                "+49 221 399 603 0"
+            ],
+            "realType": "string",
+            "uuid": "989316e6-71c6-4423-b77b-40b288fbb71f"
+        },
+        {
+            "field": "Mail",
+            "type": "text",
+            "translatableValue": [
+                "translationstudio@idmedia.com"
+            ],
+            "realType": "string",
+            "uuid": "989316e6-71c6-4423-b77b-40b288fbb71f"
+        }
+    ],
+    "keep": {
+        "Content": [
+            {
+                "__component": "content.text-with-logo",
+                "id": 1,
+                "Title": "translationstudio",
+                "Teaser": "Benefit from the advantages of professional translation management and translation automation.",
+                "Text": [
+                    {
+                        "type": "paragraph",
+                        "children": [
+                            {
+                                "type": "text",
+                                "text": "translationstudio connects CMS, DXP, DAM or PIM with translation management systems (TMS)."
+                            }
+                        ]
+                    },
+                    {
+                        "type": "paragraph",
+                        "children": [
+                            {
+                                "type": "text",
+                                "text": "Editors can easily translate content into the desired target languages and reimport the translated content ... completely automatically."
+                            }
+                        ]
+                    }
+                ],
+                "__tsuid": "261002a0-db31-40f5-998a-fc61e860384c"
+            },
+            {
+                "__component": "content.text-with-video",
+                "id": 1,
+                "Title": "It couldn't be simpler",
+                "Teaser": "translationstudio is easy as pie",
+                "Text": "The editors have enough to do and translations can be commissioned without any expert knowledge.",
+                "__tsuid": "0621c758-0f77-4c5c-a38b-9ded5c496c12"
+            },
+            {
+                "__component": "content.integrations",
+                "id": 1,
+                "Title": "Consistent translations for your entire DXP!",
+                "Text": "With translationstudio, you can integrate translations into your DXP in a consistent and coherent way: whether CMS, DAM or PIM, translationstudio connects them with leading translation management systems “out of the box”. We also integrate proprietary interfaces or special systems from translation service providers.",
+                "Listing": "SOURCE SYSTEMS",
+                "__tsuid": "4afd8002-f5fc-48c7-b9cb-a66cebaf5f2b"
+            },
+            {
+                "__component": "content.integrations",
+                "id": 2,
+                "Title": "Machine Translations",
+                "Text": "translationstudio connects to market leading machine translation services out of the box. Custom AI translations are also possible, of course.",
+                "Listing": "AI",
+                "__tsuid": "7ca95c8a-9a96-4491-a669-16275b406219"
+            },
+            {
+                "__component": "content.integrations",
+                "id": 3,
+                "Title": "Translation Memory Systems",
+                "Text": "Translators work most efficient using their familiar professional tools. translationstudio connects with them, out of the box.",
+                "Listing": "TMS",
+                "__tsuid": "01e77580-2c58-4f6b-8a20-4f3aba4c82d9"
+            },
+            {
+                "__component": "content.hero",
+                "id": 1,
+                "Title": "Concentrate on what you do best",
+                "Text": "and leave the tedious and time-consuming tasks to translationstudio.",
+                "__tsuid": "8cc3f204-a9a5-4ec8-81ab-0b9c3ab65b4c"
+            },
+            {
+                "__component": "content.tech-details",
+                "id": 1,
+                "Title": "Technical details",
+                "Text": "You can find all the technical details about translationstudio on our product website",
+                "__tsuid": "d2ea8573-345d-4504-950c-d52898b2f3e4"
+            },
+            {
+                "__component": "content.contact",
+                "id": 1,
+                "Title": "Let us show you",
+                "Text": "We demonstrate translationstudio at any time - no strings attached.",
+                "Tel": "+49 221 399 603 0",
+                "Mail": "translationstudio@idmedia.com",
+                "__tsuid": "989316e6-71c6-4423-b77b-40b288fbb71f"
+            }
+        ]
+    }
+}

@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { transformFieldsToData } from '../../../../../server/src/services/functions/importData/transformFieldsToData';
+import { transformFieldsToData } from '../../../../server/src/services/functions/importData/transformFieldsToData';
 
 describe('transformFieldsToData', () => {
   test('should transform single value fields', () => {

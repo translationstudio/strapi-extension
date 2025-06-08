@@ -1,4 +1,4 @@
-import parseInlineElements from '../../../../../server/src/services/functions/importData/parseInlineElements';
+import parseInlineElements from '../../../../server/src/services/functions/importData/parseInlineElements';
 
 describe('parseInlineElements', () => {
   test('handles plain text', () => {
