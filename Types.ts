@@ -145,7 +145,6 @@ export type TranslationStatusData = {
 export interface OrganizedFields {
   regularFields: TranslationstudioTranslatable[];
   componentFieldsMap: Map<string, TranslationstudioTranslatable[]>;
-  dynamicZoneFields: Map<number, TranslationstudioTranslatable[]>;
 }
 
 export interface ExportPayload {
@@ -154,15 +153,16 @@ export interface ExportPayload {
   element: string;
 }
 
-// {
-//   "source": "de",
-//   "target":"nyn-UG"
-//   "element":"api::collection-component.collection-component#c94ucr8jvtfpuydbaluhadkf"
-// }
+export interface TranslatedDocumentReplaceFields {
+  [name:string]: any
+}
 
 export interface ImportPayload {
   element: string;
   source: string;
   target: string;
-  document: [{ fields: [] }];
+  document: { 
+      fields: TranslationstudioTranslatable[],
+      keep?: TranslatedDocumentReplaceFields
+  }[];
 }
