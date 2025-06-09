@@ -23,6 +23,9 @@ import { ArrowClockwise, Play } from '@strapi/icons';
 // @ts-ignore
 import TSlogoFarbig from '../assets/translationstudio.svg';
 
+// @ts-ignore
+import TSlogoWhite from "../assets/translationstudio-white.svg";
+
 async function loadLicense(fnGet: Function): Promise<string> {
     try {
         const response = await fnGet('/translationstudio/getLicense');
@@ -71,7 +74,7 @@ const TextareaStyle = {
     cursor: 'default',
 }
 
-const BUttonStyle ={ backgroundColor: '#e94642', border: 'none', paddingTop: "0.6em", paddingBottom: "0.6em" }
+const BUttonStyle = { backgroundColor: '#e94642', border: 'none', paddingTop: "0.6em", paddingBottom: "0.6em" }
 
 
 const SettingsPage = () => {
@@ -219,22 +222,20 @@ const SettingsPage = () => {
                 style={{
                     minHeight: '90vh',
                     marginTop: '5vh',
-                    backgroundColor: 'white',
-                    color: 'grey',
                 }}
             >
                 <Grid.Root>
                     <Grid.Item xs={12} >
                         <Box style={{textAlign: "right", width: "100%"}}>
-                            <img
-                                src={TSlogoFarbig}
-                                alt="Translation Studio Logo"
-                                style={{
+                            <picture style={{
                                     width: '300px',
                                     height: 'auto',
                                     display: "inline-block"
-                                }}
-                            />
+                                }}>
+                                <source srcSet={TSlogoFarbig} media="(prefers-color-scheme: light)"/>
+                                <source srcSet={TSlogoWhite} media="(prefers-color-scheme: dark)"/>
+                                <img src={TSlogoFarbig}/>
+                            </picture>
                         </Box>
                     </Grid.Item>
                     <Grid.Item xs={12} style={{ paddingTop: "2em"}}>

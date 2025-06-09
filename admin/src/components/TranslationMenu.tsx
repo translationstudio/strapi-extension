@@ -35,8 +35,12 @@ import {
   TranslationRequest,
   TranslationRequestTranslations,
 } from '../../../Types';
+
 // @ts-ignore
-import logoSvg from '../assets/translationstudio-white.svg';
+import TSlogoFarbig from '../assets/translationstudio.svg';
+
+// @ts-ignore
+import TSlogoWhite from "../assets/translationstudio-white.svg";
 
 const getSubmitLabel = function (isUrgent: boolean, isMachineTranslation: boolean) {
   if (isMachineTranslation) return 'Translate with ai';
@@ -374,15 +378,15 @@ const TranslationMenu = () => {
       <Box padding={4} style={{ width: '100%' }}>
         <Box paddingBottom={4} textAlign="right" style={{ width: '100%' }}>
           <Flex justifyContent="flex-end">
-            <img
-              src={logoSvg}
-              alt=""
-              style={{
+            <picture style={{
                 maxWidth: '200px',
                 width: "100%",
                 height: 'auto',
-              }}
-            />
+              }}>
+                <source srcSet={TSlogoFarbig} media="(prefers-color-scheme: light)"/>
+                <source srcSet={TSlogoWhite} media="(prefers-color-scheme: dark)"/>
+                <img src={TSlogoFarbig}/>
+            </picture>
           </Flex>
         </Box>
 
