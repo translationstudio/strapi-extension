@@ -218,7 +218,13 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => {
         },
         async ping(): Promise<void> {
             return;
-        }
+        },
+
+        async getEntryData(contentTypeID:string, entryID:string, locale:string) {
+            const entry = await getEntry(contentTypeID, entryID, locale);
+            return entry;
+        },
+
     };
 };
 
