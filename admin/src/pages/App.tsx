@@ -17,15 +17,17 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 */
 import { Page } from '@strapi/strapi/admin';
 import { Routes, Route } from 'react-router-dom';
-
+import { DesignSystemProvider, lightTheme } from '@strapi/design-system';
 import { SettingsPage } from './SettingsPage';
 
 const App = () => {
   return (
-    <Routes>
-      <Route index element={<SettingsPage />} />
-      <Route path="*" element={<Page.Error />} />
-    </Routes>
+    <DesignSystemProvider>
+      <Routes>
+        <Route index element={<SettingsPage />} />
+        <Route path="*" element={<Page.Error />} />
+      </Routes>
+    </DesignSystemProvider>
   );
 };
 
