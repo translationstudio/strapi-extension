@@ -1,5 +1,5 @@
 {
-  "name": "translationstudio-strapi-extension",
+  "name": "@translationstudio/translationstudio-strapi-extension",
   "description": "translationstudio extension for strapi",
   "license": "GPL-2.0-only",
   "author": "Duncan Leininger <duncan.leininger@idmedia.com>",
