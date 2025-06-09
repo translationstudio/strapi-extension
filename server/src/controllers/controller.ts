@@ -88,7 +88,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
             const payload = typeof ctx.request.body === "string" ? JSON.parse(ctx.request.body) : ctx.request.body;
             const result = await strapi.plugin(APP_NAME).service('service').exportData(payload);
             ctx.status = 200;
-            ctx.body = [{ fields: result }];
+            ctx.body = [ result ];
         }
         catch (ex) {
             ctx.status = 500;
