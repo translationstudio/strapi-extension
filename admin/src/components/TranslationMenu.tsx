@@ -231,7 +231,7 @@ const TranslationMenu = () => {
     if (!tsIsAvailable) {
       return (
         <Box paddingBottom={4}>
-          <Typography style={{ color: 'white' }}>The pugin is not available.</Typography>
+          <Typography>The pugin is not available.</Typography>
         </Box>
       );
     }
@@ -239,7 +239,7 @@ const TranslationMenu = () => {
     if (licenseValid === false) {
       return (
         <Box paddingBottom={4}>
-          <Typography style={{ color: 'white' }}>
+          <Typography>
             Your translationstudio license is invalid. Please update your strapi configuration.
           </Typography>
         </Box>
@@ -249,7 +249,7 @@ const TranslationMenu = () => {
     if (languages.length === 0) {
       return (
         <Box paddingBottom={4}>
-          <Typography style={{ color: 'white' }}>
+          <Typography>
             No translation settings available. translationstudio has not been configured yet. Please
             add translation settings first.
           </Typography>
@@ -282,30 +282,30 @@ const TranslationMenu = () => {
 
         {!isMachineTranslation && (
           <>
-            <Box paddingBottom={4} paddingTop={4} style={{ color: 'white' }}>
+            <Box paddingBottom={4} paddingTop={4}>
               <Typography variant="beta" tag="label" paddingBottom={4}>
                 Additional Settings
               </Typography>
             </Box>
 
-            <Box paddingBottom={4} style={{ color: 'white' }}>
+            <Box paddingBottom={4}>
               <Checkbox
                 onCheckedChange={handleUrgentChange}
                 defaultChecked={isUrgent}
-                style={{ color: 'white' }}
+               
               >
-                <Typography style={{ color: 'white' }}>
+                <Typography>
                   translate immediately (and ignore quotes)
                 </Typography>
               </Checkbox>
             </Box>
-            <Box paddingBottom={4} style={{ color: 'white' }}>
+            <Box paddingBottom={4}>
               <Checkbox
                 onCheckedChange={handleEmailChange}
                 defaultChecked={isEmail}
-                style={{ color: 'white' }}
+               
               >
-                <Typography style={{ color: 'white' }}>
+                <Typography>
                   Send email notifications on translation status updates
                 </Typography>
               </Checkbox>
@@ -371,7 +371,7 @@ const TranslationMenu = () => {
         </Box>
       )}
 
-      <Box padding={4} style={{ width: '100%', color: 'white' }}>
+      <Box padding={4} style={{ width: '100%' }}>
         <Box paddingBottom={4} textAlign="right" style={{ width: '100%' }}>
           <Flex justifyContent="flex-end">
             <img
@@ -379,6 +379,7 @@ const TranslationMenu = () => {
               alt=""
               style={{
                 maxWidth: '200px',
+                width: "100%",
                 height: 'auto',
               }}
             />
