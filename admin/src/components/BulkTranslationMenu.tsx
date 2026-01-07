@@ -177,6 +177,9 @@ const EntriesTable = ({
     );
   }
 
+  const hasSelectedAll = selectedEntries.size === entries.length && entries.length > 0;
+  const checkedType = hasSelectedAll || selectedEntries.size === 0 ? hasSelectedAll : "indeterminate"
+
   return (
     <Box
       style={{
@@ -193,8 +196,7 @@ const EntriesTable = ({
           <Tr>
             <Th style={{ width: '50px' }}>
               <Checkbox
-                checked={selectedEntries.size === entries.length && entries.length > 0}
-                indeterminate={selectedEntries.size > 0 && selectedEntries.size < entries.length}
+                checked={checkedType}
                 onCheckedChange={onSelectAll}
               />
             </Th>
@@ -327,6 +329,25 @@ const EntryRow = ({
   );
 };
 
+const fetchContentEntriesData = async function(selectedContentType:string) : Promise<Entry[]>
+{
+  if (!selectedContentType) {
+    return [];
+  }
+  
+  try {
+    const { get } = getFetchClient();
+    const response = await get(`/content-manager/collection-types/${selectedContentType}`);
+    if (response.data?.results && Array.isArray(response.data.results))
+      return response.data.results;
+  }
+  catch (error) {
+    console.error('Failed to fetch entries:', error);
+  }
+  
+  return [];
+}
+
 const BulkTranslationMenu = ({
   historyData,
   isLoadingHistory,
@@ -351,15 +372,26 @@ const BulkTranslationMenu = ({
         const response = await get('/content-manager/content-types');
         const types = filterAndTransformContentTypes(response.data.data);
         setContentTypes(types);
-      } catch (error) {
+
+        if (types.length > 0)
+        {
+          setSelectedEntries(new Set());
+          setSelectedContentType(types[0].uid);
+          const data = await fetchContentEntriesData(types[0].uid);
+          setEntries(data);
+        }
+      } 
+      catch (error) {
         console.error('Failed to fetch content types:', error);
-      } finally {
+      } 
+      finally {
         setIsLoadingContentTypes(false);
       }
     };
     fetchContentTypes();
-  }, [setIsLoadingContentTypes, setContentTypes]);
+  }, [ setIsLoadingContentTypes, setContentTypes, setSelectedContentType, setEntries, setSelectedEntries ]);
 
+  
   const fetchContentEntries = function(selectedContentType:string)
   {
     if (!selectedContentType) {
@@ -367,13 +399,10 @@ const BulkTranslationMenu = ({
     }
 
     setIsLoadingEntries(true);
-    get(`/content-manager/collection-types/${selectedContentType}`).then(response => {
-      setEntries(response.data.results || []);
+
+    fetchContentEntriesData(selectedContentType).then(data => {
+      setEntries(data);
       setSelectedEntries(new Set());
-    })
-    .catch (error => {
-      console.error('Failed to fetch entries:', error);
-      setEntries([]);
     })
     .finally(() => setIsLoadingEntries(false));
   };
@@ -413,6 +442,15 @@ const BulkTranslationMenu = ({
     setSelectedEntries(new Set());
     onTranslationComplete?.();
   };
+
+  if (contentTypes.length === 0)
+  {
+    return <Box paddingTop={4} paddingBottom={4} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <Typography variant="omega" paddingBottom={3} style={{ fontWeight: 'bold' }}>
+          No content types available.
+        </Typography>
+    </Box>
+  }
 
   return (
     <Box paddingTop={4} paddingBottom={4} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>

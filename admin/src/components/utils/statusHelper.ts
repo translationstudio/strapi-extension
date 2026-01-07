@@ -21,11 +21,11 @@ export type TranslationStatus =
   | 'translated'
   | 'in_translation'
   | 'not_translated'
-  | 'error_fetching_history';
+  | '';
 
 export const getTranslationStatus = (entryId: string, historyData: any[]): TranslationStatus => {
   if (!Array.isArray(historyData) || historyData.length === 0) {
-    return 'error_fetching_history';
+    return "";
   }
 
   const matchingItems = historyData.filter((h: any) => h['element-uid'].includes(entryId));
@@ -75,21 +75,27 @@ export const getTranslationDate = (entryId: string, historyData: any[]): string 
 };
 
 export const getStatusBadgeVariant = (status: TranslationStatus): string => {
-  const variants = {
-    translated: 'success',
-    in_translation: 'secondary',
-    error_fetching_history: 'danger',
-    not_translated: 'neutral',
-  };
-  return variants[status] || 'neutral';
+  switch(status)
+  {
+    case "translated":
+      return "success";
+    case "in_translation":
+      return "secondary";
+    default:
+      return "neutral";
+  }
 };
 
 export const getStatusDisplayText = (status: TranslationStatus): string => {
-  const texts = {
-    translated: 'Translated',
-    in_translation: 'In Translation',
-    error_fetching_history: 'Error fetching history',
-    not_translated: 'Not Translated',
-  };
-  return texts[status] || 'Not Translated';
+  switch(status)
+  {
+    case "translated":
+      return "Translated";
+    case "in_translation":
+      return "In Translation";
+    case "not_translated":
+      return "Not translated";
+    default:
+      return "n.a.";
+  }
 };
