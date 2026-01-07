@@ -42,10 +42,8 @@ type ContentNode = TextNode | LinkNode;
 function parseInlineElements(text: string): ContentNode[] {
   const elements: ContentNode[] = [];
 
-  // Add empty text node at start
   elements.push({ type: 'text', text: '' });
 
-  // Parse inline elements including nested formatting in links
   const regex =
     /<a\s+href="([^"]+)">(.*?)<\/a>|<(strong|em|u|code|del)>(.*?)<\/\3>|~~([^~]+)~~|([^<~]+)/gs;
   let match;
@@ -54,7 +52,6 @@ function parseInlineElements(text: string): ContentNode[] {
     const [full, href, linkContent, tag, content, strikethrough, plainText] = match;
 
     if (href && linkContent) {
-      // Handle link with potential nested formatting
       const linkChildren = parseInlineElements(linkContent).filter(
         (node) => node.type === 'text' && node.text !== ''
       );
@@ -65,7 +62,6 @@ function parseInlineElements(text: string): ContentNode[] {
         children: linkChildren as TextNode[],
       });
     } else if (tag && content) {
-      // Handle regular formatting tags
       const textNode: TextNode = { type: 'text', text: content };
       switch (tag) {
         case 'strong':
@@ -96,7 +92,6 @@ function parseInlineElements(text: string): ContentNode[] {
     }
   }
 
-  // Add empty text node at end
   elements.push({ type: 'text', text: '' });
 
   return elements;

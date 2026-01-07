@@ -24,7 +24,7 @@ Follow these steps:
 2. run `npm install` (if there are errors, add `--legacy-peer-deps`)
 3. run `npm run watch:link` in this folder
 4. Create a new strapi project and enter the folder
-5. run `npx yalc add --link _translationstudio-strapi-extension_`
+5. run `npx yalc add --link @translationstudio/translationstudio-strapi-extension`
 6. start strapi in development mode
 
 ### Publish package update

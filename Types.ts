@@ -154,15 +154,57 @@ export interface ExportPayload {
 }
 
 export interface TranslatedDocumentReplaceFields {
-  [name:string]: any
+  [name: string]: any;
 }
 
 export interface ImportPayload {
   element: string;
   source: string;
   target: string;
-  document: { 
-      fields: TranslationstudioTranslatable[],
-      keep?: TranslatedDocumentReplaceFields
+  document: {
+    fields: TranslationstudioTranslatable[];
+    keep?: TranslatedDocumentReplaceFields;
   }[];
+}
+
+export interface HistoryItem {
+  'time-intranslation': number;
+  'project-name': string;
+  'time-imported': number;
+  'element-uid': string;
+  'target-language': string;
+  'time-updated': number;
+  'element-name': string;
+  'time-requested': number;
+}
+
+export interface ContentType {
+  uid: string;
+  displayName: string;
+  kind: string;
+}
+
+export interface Entry {
+  id: string;
+  documentId: string;
+  title?: string;
+  name?: string;
+  headline?: string;
+  [key: string]: any;
+}
+
+export interface BulkTranslationMenuProps {
+  historyData: HistoryItem[];
+  isLoadingHistory: boolean;
+  onTranslationComplete?: () => void;
+}
+
+export interface BulkTranslationPanelProps {
+  contentType: ContentType | undefined;
+  selectedEntries: string[];
+  onTranslationComplete: () => void;
+}
+
+export interface EntryHistoryProps {
+  entryUid?: string;
 }

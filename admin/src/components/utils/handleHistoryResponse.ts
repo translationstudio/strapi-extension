@@ -15,19 +15,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-import { describe, expect, it } from '@jest/globals';
-import { extractContentAndEntryIds } from '../../../../server/src/services/functions/importData/extract';
+export const handleHistoryResponse = (
+  data: any
+): { isError: boolean; errorMessage?: string; historyData: any[] } => {
+  if (data && typeof data === 'object' && data.message === 'License cannot be used') {
+    return {
+      isError: true,
+      errorMessage: 'License cannot be used. Please check your license configuration.',
+      historyData: [],
+    };
+  }
 
-describe('extract functions', () => {
-  describe('extractContentAndEntryIds', () => {
-    it('should extract content type ID and entry ID correctly', () => {
-      const result = extractContentAndEntryIds('api::article.article#123');
-      expect(result).toEqual(['api::article.article', '123']);
-    });
-
-    it('should handle single types (no entry ID)', () => {
-      const result = extractContentAndEntryIds('api::homepage.homepage');
-      expect(result).toEqual(['api::homepage.homepage', undefined]);
-    });
-  });
-});
+  return {
+    isError: false,
+    historyData: Array.isArray(data) ? data : [],
+  };
+};

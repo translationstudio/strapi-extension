@@ -15,19 +15,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-import { describe, expect, it } from '@jest/globals';
-import { extractContentAndEntryIds } from '../../../../server/src/services/functions/importData/extract';
+const EMAIL_STORAGE_KEY = 'translationstudio-email';
 
-describe('extract functions', () => {
-  describe('extractContentAndEntryIds', () => {
-    it('should extract content type ID and entry ID correctly', () => {
-      const result = extractContentAndEntryIds('api::article.article#123');
-      expect(result).toEqual(['api::article.article', '123']);
-    });
+export const getStoredEmail = (): string => {
+  return localStorage.getItem(EMAIL_STORAGE_KEY) || '';
+};
 
-    it('should handle single types (no entry ID)', () => {
-      const result = extractContentAndEntryIds('api::homepage.homepage');
-      expect(result).toEqual(['api::homepage.homepage', undefined]);
-    });
-  });
-});
+export const setStoredEmail = (email: string): void => {
+  if (email) {
+    localStorage.setItem(EMAIL_STORAGE_KEY, email);
+  } else {
+    localStorage.removeItem(EMAIL_STORAGE_KEY);
+  }
+};

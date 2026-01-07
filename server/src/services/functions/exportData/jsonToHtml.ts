@@ -77,16 +77,13 @@ function formatText(child: any): string {
 
   let text = child.text || '';
 
-  // Apply formatting in a specific order to ensure proper nesting
   if (child.code) text = `<code>${text}</code>`;
   if (child.bold) text = `<strong>${text}</strong>`;
   if (child.italic) text = `<em>${text}</em>`;
   if (child.underline) text = `<u>${text}</u>`;
 
-  // Use markdown format for strikethrough instead of HTML
   if (child.strikethrough) {
-    text = `~~${text}~~`; // Markdown strikethrough format
-    // Instead of: text = `<del>${text}</del>`;  // HTML strikethrough format
+    text = `~~${text}~~`;
   }
 
   return text;

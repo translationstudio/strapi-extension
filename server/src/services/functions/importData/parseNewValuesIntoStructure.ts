@@ -16,14 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
 export function parseNewValuesIntoStructure(originalStructure: any, newValues: string[]) {
-  let valueIndex = 0; // Track which string in newValues to use
+  let valueIndex = 0;
 
-  // Iterate through paragraphs in originalStructure
   originalStructure.forEach((paragraph: any) => {
-    // Iterate through the children of each paragraph
     paragraph.children.forEach((child: any) => {
       if (newValues[valueIndex]) {
-        child.text = newValues[valueIndex]; // Assign text
+        child.text = newValues[valueIndex];
         valueIndex++;
       }
     });

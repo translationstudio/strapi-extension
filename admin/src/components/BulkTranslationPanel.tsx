@@ -23,39 +23,81 @@ import {
   Radio,
   Checkbox,
   Alert,
+  ProgressBar,
   TextInput,
 } from '@strapi/design-system';
 import { useState, useEffect } from 'react';
+import { getFetchClient } from '@strapi/strapi/admin';
+import { BulkTranslationPanelProps, MappingsResponse } from '../../../Types';
 import {
-  unstable_useContentManagerContext as useContentManagerContext,
-  getFetchClient,
-} from '@strapi/strapi/admin';
-import { MappingsResponse } from '../../../Types';
-
-import EntryHistory from './EntryHistory';
+  determineEntryName,
+  createTranslationPayload,
+  getSubmitLabel,
+  createEntryUid,
+} from './utils/translationUtils';
 import { getStoredEmail, setStoredEmail } from './utils/emailUtils';
 import { validateDueDate } from './utils/dateUtils';
-import { createTranslationPayload, getSubmitLabel } from './utils/translationUtils';
-import { createSuccessMessage, createErrorMessage, AlertType } from './utils/alertUtils';
-import { determineEntryName, createEntryUid } from './utils/entryUtils';
-import { LoadingSpinner, ErrorMessage } from './LoadingSpinner';
-import TranslationstudioLogo from './TranslationstudioLogo';
+import {
+  createSuccessMessage,
+  createErrorMessage,
+  createGeneralErrorMessage,
+  AlertType,
+} from './utils/alertUtils';
+import { getThemeColors, useThemeMode } from './utils/theme';
+
+const LoadingSpinner = () => (
+  <Box paddingBottom={4} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <Box
+      style={{
+        width: '16px',
+        height: '16px',
+        border: '2px solid #f3f3f3',
+        borderTop: '2px solid #3498db',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite',
+      }}
+    />
+    <Typography>Loading translation settings...</Typography>
+    <style>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
+  </Box>
+);
+
+const ErrorMessage = ({ message }: { message: string }) => (
+  <Box paddingBottom={4}>
+    <Typography>{message}</Typography>
+  </Box>
+);
 
 const LanguageSelector = ({
   languages,
+  selectedOption,
   onSelectionChange,
+  themeColors,
 }: {
   languages: MappingsResponse[];
+  selectedOption: string;
   onSelectionChange: (value: string) => void;
+  themeColors: ReturnType<typeof getThemeColors>;
 }) => (
-  <Box paddingBottom={4}>
+  <Box paddingBottom={4} style={{ color: themeColors.primaryText }}>
     <Radio.Group
       onValueChange={onSelectionChange}
+      value={selectedOption}
       name="languages"
       aria-label="translationstudio settings"
     >
-      <Typography variant="beta" tag="label" id="Sprachauswahl">
-        Translation Settings
+      <Typography
+        variant="omega"
+        tag="label"
+        paddingBottom={2}
+        style={{ color: themeColors.primaryText }}
+      >
+        Languages / Connectors
       </Typography>
       {languages.map((lang) => (
         <Radio.Item key={lang.id} value={lang.name}>
@@ -75,6 +117,7 @@ const AdditionalSettings = ({
   onEmailChange,
   onEmailInputChange,
   onDueDateChange,
+  themeColors,
 }: {
   isUrgent: boolean;
   isEmail: boolean;
@@ -84,23 +127,33 @@ const AdditionalSettings = ({
   onEmailChange: () => void;
   onEmailInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDueDateChange: (date: Date) => void;
+  themeColors: ReturnType<typeof getThemeColors>;
 }) => (
   <>
-    <Box paddingBottom={4} paddingTop={4}>
-      <Typography variant="beta" tag="label" paddingBottom={4}>
+    <Box paddingBottom={4}>
+      <Typography
+        variant="omega"
+        tag="label"
+        style={{ color: themeColors.primaryText }}
+        paddingBottom={4}
+      >
         Additional Settings
       </Typography>
     </Box>
 
     <Box paddingBottom={4}>
       <Checkbox onCheckedChange={onUrgentChange} defaultChecked={isUrgent}>
-        <Typography>translate immediately (and ignore quotes)</Typography>
+        <Typography variant="omega" style={{ color: themeColors.primaryText }}>
+          translate immediately (and ignore quotes)
+        </Typography>
       </Checkbox>
     </Box>
 
     <Box paddingBottom={4}>
       <Checkbox onCheckedChange={onEmailChange} defaultChecked={isEmail}>
-        <Typography>Send email notifications on translation status updates</Typography>
+        <Typography variant="omega" style={{ color: themeColors.primaryText }}>
+          Send email notifications on translation status updates
+        </Typography>
       </Checkbox>
     </Box>
 
@@ -118,14 +171,25 @@ const AdditionalSettings = ({
     )}
 
     {!isUrgent && (
-      <Box paddingBottom={8} paddingTop={4}>
-        <Box paddingBottom={4}>
-          <Typography variant="beta">Due Date</Typography>
+      <Box paddingBottom={4}>
+        <Box paddingBottom={2}>
+          <Typography variant="omega" style={{ color: themeColors.primaryText }}>
+            Due Date
+          </Typography>
         </Box>
         <DatePicker onChange={onDueDateChange} selecteddate={dueDate ? new Date(dueDate) : null} />
       </Box>
     )}
   </>
+);
+
+const ProgressIndicator = ({ progress }: { progress: number }) => (
+  <Box paddingBottom={4}>
+    <Typography variant="omega" paddingBottom={2}>
+      Processing... {Math.round(progress)}%
+    </Typography>
+    <ProgressBar value={progress} />
+  </Box>
 );
 
 const AlertMessage = ({
@@ -160,7 +224,11 @@ const AlertMessage = ({
   );
 };
 
-const TranslationMenu = () => {
+const BulkTranslationPanel = ({
+  contentType,
+  selectedEntries,
+  onTranslationComplete,
+}: BulkTranslationPanelProps) => {
   const [languages, setLanguages] = useState<MappingsResponse[]>([]);
   const [selectedOption, setSelectedOption] = useState('');
   const [source, setSource] = useState('');
@@ -173,21 +241,21 @@ const TranslationMenu = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [licenseValid, setLicenseValid] = useState<boolean | null>(null);
   const [tsIsAvailable, setTsIsAvailable] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [isLoadingMappings, setIsLoadingMappings] = useState(false);
   const [mappingsError, setMappingsError] = useState(false);
 
-  const { get, post } = getFetchClient();
-  const context = useContentManagerContext();
-  const { id, contentType, model } = context || {};
-  const isCollectionType = contentType?.kind === 'collectionType';
+  const themeColors = getThemeColors();
+  const isDark = useThemeMode();
 
-  const selectedLang = Array.isArray(languages)
-    ? languages.find((lang) => lang.name === selectedOption)
-    : undefined;
+  const { get, post } = getFetchClient();
+
+  const selectedLang = languages.find((lang) => lang.name === selectedOption);
   const isMachineTranslation = selectedLang?.machine ?? false;
 
   useEffect(() => {
-    if (!model) return;
+    if (!contentType) return;
 
     setIsLoadingMappings(true);
     setMappingsError(false);
@@ -221,14 +289,13 @@ const TranslationMenu = () => {
       .finally(() => {
         setIsLoadingMappings(false);
       });
-  }, [id, model, isCollectionType]);
+  }, [contentType]);
 
   useEffect(() => {
-    if (isEmail) {
-      const savedEmail = getStoredEmail();
-      if (savedEmail) {
-        setEmail(savedEmail);
-      }
+    if (!contentType || !isEmail) return;
+    const savedEmail = getStoredEmail();
+    if (savedEmail) {
+      setEmail(savedEmail);
     }
   }, [isEmail]);
 
@@ -279,61 +346,84 @@ const TranslationMenu = () => {
     }
   };
 
-  const displayAlert = (variant: AlertType, message: string) => {
-    setAlertType(variant);
+  const displayAlert = (type: AlertType, message: string) => {
+    setAlertType(type);
     setAlertMessage(message);
     setShowAlert(true);
     setTimeout(() => setShowAlert(false), 5000);
   };
 
-  const getEntryUid = () => {
-    if (!model || !id) return '';
-    return createEntryUid(isCollectionType || false, model, id);
-  };
+  const handleBulkTranslationRequest = async () => {
+    if (!contentType || !selectedLang) return;
 
-  const handleTranslationRequest = async () => {
-    if (!selectedLang || !contentType || !id) return;
-
-    const entryUid = getEntryUid();
+    setIsProcessing(true);
+    setProgress(0);
 
     try {
-      const entryResponse = await post('/translationstudio/entrydata', {
-        uid: entryUid,
-        locale: source,
-      });
+      let successCount = 0;
+      let errorCount = 0;
 
-      const fetchedEntryData = entryResponse.data;
-      const entryName = determineEntryName(
-        fetchedEntryData,
-        contentType.info?.displayName ?? '',
-        id
-      );
+      for (let i = 0; i < selectedEntries.length; i++) {
+        const entryId = selectedEntries[i];
+        setProgress(((i + 1) / selectedEntries.length) * 100);
 
-      const payload = createTranslationPayload(
-        selectedLang,
-        dueDate,
-        isEmail,
-        isMachineTranslation,
-        email,
-        isUrgent,
-        contentType.info?.displayName ?? '',
-        entryUid,
-        entryName
-      );
+        try {
+          const entryUid = createEntryUid(contentType, entryId);
 
-      const response = await post('/translationstudio/translate', payload);
+          const entryResponse = await post('/translationstudio/entrydata', {
+            uid: entryUid,
+            locale: source,
+          });
 
-      const { type, message } =
-        response.data === true ? createSuccessMessage(1, 1) : createErrorMessage(1);
+          const fetchedEntryData = entryResponse.data;
+          const entryName = determineEntryName(fetchedEntryData, contentType.displayName);
 
-      displayAlert(
-        type,
-        response.data === true
-          ? 'Translation request sent successfully'
-          : 'Error requesting translation'
-      );
+          const payload = createTranslationPayload(
+            selectedLang,
+            dueDate,
+            isEmail,
+            isMachineTranslation,
+            email,
+            isUrgent,
+            contentType.displayName,
+            entryUid,
+            entryName
+          );
+
+          const response = await post('/translationstudio/translate', payload);
+
+          if (response.data === true) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          console.error(`Failed to translate entry ${entryId}:`, error);
+          errorCount++;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      if (errorCount === 0) {
+        const { type, message } = createSuccessMessage(successCount, selectedEntries.length);
+        displayAlert(type, message);
+      } else if (successCount === 0) {
+        const { type, message } = createErrorMessage(selectedEntries.length);
+        displayAlert(type, message);
+      } else {
+        const { type, message } = createSuccessMessage(successCount, selectedEntries.length);
+        displayAlert(type, message);
+      }
+
+      onTranslationComplete();
     } catch (error: any) {
-      displayAlert('danger', `The entry does not exist in the selected source locale (${source}).`);
+      console.error('Bulk translation error:', error);
+      const { type, message } = createGeneralErrorMessage();
+      displayAlert(type, message);
+    } finally {
+      setIsProcessing(false);
+      setProgress(0);
     }
   };
 
@@ -361,44 +451,6 @@ const TranslationMenu = () => {
     return null;
   };
 
-  const renderPlugin = () => (
-    <>
-      <LanguageSelector languages={languages} onSelectionChange={handleRadioSelection} />
-
-      {!isMachineTranslation && selectedOption !== '' && (
-        <AdditionalSettings
-          isUrgent={isUrgent}
-          isEmail={isEmail}
-          email={email}
-          dueDate={dueDate}
-          onUrgentChange={handleUrgentChange}
-          onEmailChange={handleEmailChange}
-          onEmailInputChange={handleEmailInputChange}
-          onDueDateChange={handleDueDateChange}
-        />
-      )}
-
-      <Button
-        fullWidth
-        onClick={handleTranslationRequest}
-        disabled={!selectedOption}
-        startIcon={
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" fill="currentColor" />
-          </svg>
-        }
-      >
-        {getSubmitLabel(1, isUrgent, isMachineTranslation)}
-      </Button>
-    </>
-  );
-
   const pluginIsAvailable = () => {
     return !isLoadingMappings && licenseValid !== null && tsIsAvailable === true && !mappingsError;
   };
@@ -412,24 +464,65 @@ const TranslationMenu = () => {
         onClose={() => setShowAlert(false)}
       />
 
-      <Box padding={4} style={{ textAlign: 'center', width: '100%', marginBottom: '20px' }}>
-        <picture
-          style={{
-            width: '85%',
-            height: 'auto',
-            display: 'inline-block',
-          }}
-        >
-          <TranslationstudioLogo />
-        </picture>
-      </Box>
-      <Box padding={4} style={{ textAlign: 'center', width: '100%' }}>
-        {!pluginIsAvailable() ? renderNotAvailable() : renderPlugin()}
-      </Box>
+      <Box
+        padding={4}
+        style={{
+          width: '100%',
+          backgroundColor: themeColors.cardBackground,
+          borderRadius: '4px',
+        }}
+      >
+        {!pluginIsAvailable() ? (
+          renderNotAvailable()
+        ) : (
+          <>
+            <LanguageSelector
+              languages={languages}
+              selectedOption={selectedOption}
+              onSelectionChange={handleRadioSelection}
+              themeColors={themeColors}
+            />
 
-      <EntryHistory entryUid={getEntryUid()} />
+            {!isMachineTranslation && selectedOption !== '' && (
+              <AdditionalSettings
+                isUrgent={isUrgent}
+                isEmail={isEmail}
+                email={email}
+                dueDate={dueDate}
+                onUrgentChange={handleUrgentChange}
+                onEmailChange={handleEmailChange}
+                onEmailInputChange={handleEmailInputChange}
+                onDueDateChange={handleDueDateChange}
+                themeColors={themeColors}
+              />
+            )}
+
+            {isProcessing && <ProgressIndicator progress={progress} />}
+
+            <Button
+              fullWidth
+              onClick={handleBulkTranslationRequest}
+              disabled={!selectedOption || isProcessing}
+              loading={isProcessing}
+              startIcon={
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" fill="currentColor" />
+                </svg>
+              }
+            >
+              {getSubmitLabel(selectedEntries.length, isUrgent, isMachineTranslation)}
+            </Button>
+          </>
+        )}
+      </Box>
     </>
   );
 };
 
-export default TranslationMenu;
+export default BulkTranslationPanel;

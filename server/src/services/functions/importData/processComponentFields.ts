@@ -18,7 +18,7 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 import { TranslationstudioTranslatable } from '../../../../../Types';
 import htmlToJson from './htmlToJson';
 
-// Helper function to handle repeatable components
+// helper function to handle repeatable components
 function processRepeatableComponents(
   fields: TranslationstudioTranslatable[],
   existingEntry: any,
@@ -40,7 +40,6 @@ function processRepeatableComponents(
     }
     const component = componentsById.get(componentId);
 
-    // Handle blocks fields differently
     if (field.realType === 'blocks') {
       component[field.field] = htmlToJson(field.translatableValue[0] || '');
     } else {
@@ -59,7 +58,6 @@ function processRepeatableComponents(
     .filter((comp) => Object.keys(comp).length > 0);
 }
 
-// Helper function to handle nested components
 function processNestedComponents(
   fields: TranslationstudioTranslatable[],
   pathParts: string[],
@@ -73,16 +71,13 @@ function processNestedComponents(
     if (!current[part]) {
       current[part] = {};
 
-      // Preserve existing IDs for nested components
       if (currentExisting?.[part]?.id) {
         current[part].id = currentExisting[part].id;
       }
     }
 
     if (index === pathParts.length - 1) {
-      // Add fields at the final nesting level
       fields.forEach((field) => {
-        // Handle blocks fields differently
         if (field.realType === 'blocks') {
           current[part][field.field] = htmlToJson(field.translatableValue[0] || '');
         } else {
@@ -96,7 +91,7 @@ function processNestedComponents(
   });
 }
 
-// Main function to process component fields
+// function to process component fields
 export function processComponentFields(
   componentFieldsMap: Map<string, TranslationstudioTranslatable[]>,
   acc: Record<string, any>,
@@ -111,10 +106,10 @@ export function processComponentFields(
     const schema = targetSchema.attributes?.[rootPath];
 
     if (schema?.repeatable) {
-      // Handle repeatable components
+      // repeatable components
       acc[rootPath] = processRepeatableComponents(fields, existingEntry, rootPath);
     } else {
-      // Handle nested components
+      // nested components
       processNestedComponents(fields, pathParts, existingEntry, acc);
     }
   });

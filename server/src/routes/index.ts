@@ -116,15 +116,7 @@ export default [
       policies: [],
     },
   },
-  {
-    method: 'GET',
-    path: '/email',
-    handler: 'controller.getEmail',
-    config: {
-      policies: [],
-    },
-  },
-  
+
   /* get entry title */
   {
     method: 'POST',
@@ -133,5 +125,13 @@ export default [
     config: {
       policies: [],
     },
-  }
+  },
+  {
+    method: 'GET',
+    path: '/history',
+    handler: 'controller.getHistory',
+    config: {
+      policies: [],
+    },
+  },
 ];

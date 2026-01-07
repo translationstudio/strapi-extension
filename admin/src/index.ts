@@ -18,22 +18,37 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 import { getTranslation } from './utils/getTranslation';
 import { PLUGIN_ID } from './pluginId';
 import { Initializer } from './components/Initializer';
-import { PluginIcon } from './components/PluginIcon';
+import { SettingsIcon } from './components/SettingsIcon';
 import TranslationMenu from './components/TranslationMenu';
+import { HistoryIcon } from './components/HistoryIcon';
 
 export default {
   register(app: any) {
     app.addMenuLink({
       to: `plugins/${PLUGIN_ID}`,
-      icon: PluginIcon,
+      icon: SettingsIcon,
       intlLabel: {
         id: `${PLUGIN_ID}.plugin.name`,
-        defaultMessage: PLUGIN_ID,
+        defaultMessage: "translationstudio Settings",
       },
       Component: async () => {
         const { App } = await import('./pages/App');
 
         return App;
+      },
+    });
+
+    app.addMenuLink({
+      to: `/plugins/${PLUGIN_ID}/history`,
+      icon: HistoryIcon,
+      intlLabel: {
+        id: `${PLUGIN_ID}.plugin.history`,
+        defaultMessage: 'translationstudio Dashboard',
+      },
+      Component: async () => {
+        const { HistoryPage } = await import('./pages/HistoryPage');
+
+        return HistoryPage;
       },
     });
 
