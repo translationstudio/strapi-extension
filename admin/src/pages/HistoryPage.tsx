@@ -21,12 +21,32 @@ import { HistoryMenu } from '../components/HistoryMenu';
 import { BulkTranslationMenu } from '../components/BulkTranslationMenu';
 import { getFetchClient } from '@strapi/strapi/admin';
 
-import { HistoryItem } from '../../../Types';
+import { HistoryDataMap, HistoryItem } from '../../../Types';
 import { handleHistoryResponse } from '../components/utils/handleHistoryResponse';
 import TranslationstudioLogo from '../components/TranslationstudioLogo';
 
+const processHistoryData = function(list:HistoryItem[])
+{
+  const map:HistoryDataMap = {};
+
+  for (const elem of list)
+  {
+    const id = elem['element-uid'].split("#");
+    if (id.length !== 2)
+      continue;
+    
+    if (!map[id[0]])
+      map[id[0]] = [elem];
+    else 
+      map[id[0]].push(elem);
+  }
+
+  return map;
+}
+
 const HistoryPage = () => {
-  const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
+  const [historyData, setHistoryData] = useState<HistoryDataMap>({ });
+
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [activeTab, setActiveTab] = useState('history');
 
@@ -38,13 +58,15 @@ const HistoryPage = () => {
         const response = await get('/translationstudio/history');
         const result = handleHistoryResponse(response.data);
 
-        if (result.isError) {
-        } else {
-          setHistoryData(result.historyData);
-        }
+        if (result.isError) 
+          throw new Error("Cold not fetch data");
+        
+        if (result.historyData && Array.isArray(result.historyData))
+          setHistoryData(processHistoryData(result.historyData));
+        
       } catch (error) {
         console.error('Failed to fetch history:', error);
-        setHistoryData([]);
+        setHistoryData({});
       }
       finally {
         setIsLoadingHistory(false);
@@ -59,13 +81,13 @@ const HistoryPage = () => {
       const response = await get('/translationstudio/history');
       const result = handleHistoryResponse(response.data);
 
-      if (result.isError) {
-        setHistoryData([]);
-      } else {
-        setHistoryData(result.historyData);
-      }
+      if (result.isError) 
+        setHistoryData( {} );
+       else  if (result.historyData && Array.isArray(result.historyData))
+        setHistoryData(processHistoryData(result.historyData));
+
     } catch (error) {
-      setHistoryData([]);
+      setHistoryData({ });
     } finally {
       setIsLoadingHistory(false);
     }

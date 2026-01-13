@@ -25,22 +25,15 @@ import {
   Th,
   Td,
   Checkbox,
-  Badge,
 } from '@strapi/design-system';
 import { useState, useEffect, useMemo } from 'react';
 import { getFetchClient } from '@strapi/strapi/admin';
 import BulkTranslationPanel from './BulkTranslationPanel';
-import { ContentType, BulkTranslationMenuProps, Entry } from '../../../Types';
+import { ContentType, BulkTranslationMenuProps, Entry, HistoryDataMap, HistoryItem } from '../../../Types';
 import { filterAndTransformContentTypes } from './utils/filterAndTransformContentTypes';
 import { getEntryTitle, getEntryId } from './utils/getEntryHelper';
-import {
-  getTranslationStatus,
-  getTargetLanguages,
-  getTranslationDate,
-  getStatusBadgeVariant,
-  getStatusDisplayText,
-} from './utils/statusHelper';
 import { getThemeColors } from './utils/theme';
+import { getElementStatus } from './utils/historyDataUtils';
 
 const ContentTypesList = ({
   contentTypes,
@@ -139,7 +132,7 @@ const EntriesTable = ({
   entries: Entry[];
   isLoading: boolean;
   selectedEntries: Set<string>;
-  historyData: any[];
+  historyData: HistoryDataMap;
   isLoadingHistory: boolean;
   onEntrySelection: (entryId: string, isSelected: boolean) => void;
   onSelectAll: (isSelected: boolean) => void;
@@ -191,58 +184,30 @@ const EntriesTable = ({
         backgroundColor: themeColors.cardBackground,
       }}
     >
-      <Table colCount={6} rowCount={entries.length + 1}>
+      <Table colCount={5}>
         <Thead>
           <Tr>
             <Th style={{ width: '50px' }}>
-              <Checkbox
-                checked={checkedType}
-                onCheckedChange={onSelectAll}
-              />
+              <Checkbox checked={checkedType} onCheckedChange={onSelectAll} />
             </Th>
             <Th>
-              <Typography
-                variant="sigma"
-                fontWeight="bold"
-                style={{ color: themeColors.primaryText }}
-              >
+              <Typography variant="sigma" fontWeight="bold" style={{ color: themeColors.primaryText }}>
                 Title
               </Typography>
             </Th>
             <Th>
-              <Typography
-                variant="sigma"
-                fontWeight="bold"
-                style={{ color: themeColors.primaryText }}
-              >
-                ID
+              <Typography variant="sigma" fontWeight="bold" style={{ color: themeColors.primaryText }}>
+                Translated
               </Typography>
             </Th>
             <Th>
-              <Typography
-                variant="sigma"
-                fontWeight="bold"
-                style={{ color: themeColors.primaryText }}
-              >
-                Status
+              <Typography variant="sigma" fontWeight="bold" style={{ color: themeColors.primaryText }}>
+                In translation
               </Typography>
             </Th>
             <Th>
-              <Typography
-                variant="sigma"
-                fontWeight="bold"
-                style={{ color: themeColors.primaryText }}
-              >
-                Target Language
-              </Typography>
-            </Th>
-            <Th>
-              <Typography
-                variant="sigma"
-                fontWeight="bold"
-                style={{ color: themeColors.primaryText }}
-              >
-                Date
+              <Typography variant="sigma" fontWeight="bold" style={{ color: themeColors.primaryText }}>
+                Queued
               </Typography>
             </Th>
           </Tr>
@@ -265,6 +230,19 @@ const EntriesTable = ({
   );
 };
 
+const getLangQueued = function(list:HistoryItem[])
+{
+  return list.filter(e => getElementStatus(e) === "queued").map((e) => e['target-language']).sort().join(", ");
+}
+const getLangInTranslation = function(list:HistoryItem[])
+{
+  return list.filter(e => getElementStatus(e) === "intranslation").map((e) => e['target-language']).sort().join(", ");
+}
+const getLangTranslated = function(list:HistoryItem[])
+{
+  return list.filter(e => getElementStatus(e) === "translated").map((e) => e['target-language']).sort().join(", ");
+}
+
 const EntryRow = ({
   entry,
   isSelected,
@@ -275,16 +253,15 @@ const EntryRow = ({
 }: {
   entry: Entry;
   isSelected: boolean;
-  historyData: any[];
+  historyData: HistoryDataMap;
   isLoadingHistory: boolean;
   onEntrySelection: (entryId: string, isSelected: boolean) => void;
   themeColors: ReturnType<typeof getThemeColors>;
 }) => {
   const entryId = getEntryId(entry);
-  const status = getTranslationStatus(entryId, historyData);
-  const targetLanguages = getTargetLanguages(entryId, historyData);
-  const date = getTranslationDate(entryId, historyData);
 
+  const history = historyData[entryId] ?? [];
+  
   return (
     <Tr>
       <Td>
@@ -297,32 +274,24 @@ const EntryRow = ({
         <Typography variant="omega" style={{ color: themeColors.primaryText }}>
           {getEntryTitle(entry)}
         </Typography>
-      </Td>
-      <Td>
-        <Typography
-          variant="omega"
-          style={{ fontFamily: 'monospace', fontSize: '12px', color: themeColors.secondaryText }}
-        >
+        <br/>
+        <Typography variant="omega" style={{ fontFamily: 'monospace', fontSize: '12px', color: themeColors.secondaryText }} >
           {entryId}
         </Typography>
       </Td>
       <Td>
-        {isLoadingHistory ? (
-          <Typography variant="omega" style={{ color: themeColors.mutedText }}>
-            Loading...
-          </Typography>
-        ) : (
-          <Badge variant={getStatusBadgeVariant(status)}>{getStatusDisplayText(status)}</Badge>
-        )}
-      </Td>
-      <Td>
         <Typography variant="omega" style={{ color: themeColors.primaryText }}>
-          {targetLanguages.map((lang) => lang.toUpperCase()).join(', ') || '-'}
+          {getLangTranslated(history)}
         </Typography>
       </Td>
       <Td>
         <Typography variant="omega" style={{ color: themeColors.primaryText }}>
-          {date}
+          {getLangInTranslation(history)}
+        </Typography>
+      </Td>
+      <Td>
+        <Typography variant="omega" style={{ color: themeColors.primaryText }}>
+          {getLangQueued(history)}
         </Typography>
       </Td>
     </Tr>
@@ -499,7 +468,7 @@ const BulkTranslationMenu = ({
           {selectedEntries.size > 0 && (
             <>
               <Typography variant="omega" paddingBottom={3} style={{ fontWeight: 'bold' }}>
-                Translation Settings
+                Translation Options
               </Typography>
               <Box style={{ borderRadius: '4px', overflow: 'hidden' }}>
                 <BulkTranslationPanel
@@ -517,3 +486,4 @@ const BulkTranslationMenu = ({
 };
 
 export { BulkTranslationMenu };
+  

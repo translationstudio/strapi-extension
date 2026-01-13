@@ -17,27 +17,32 @@ along with this program; if not, see https://www.gnu.org/licenses/old-licenses/g
 */
 export type StatusVariant = 'success' | 'warning' | 'neutral';
 
-export interface StatusInfo {
-  text: string;
-  variant: StatusVariant;
+export type TranslationStatus = "translated" | "intranslation" | "queued";
+
+export function GetStatusColor(input:TranslationStatus|"mixed"|""):StatusVariant
+{
+  switch(input)
+  {
+    case "translated":
+      return "success";
+    case "intranslation":
+      return "warning";
+    default: 
+      return "neutral";
+  }
 }
 
-export const getHistoryStatus = (timeInTranslation: number, timeImported: number): StatusInfo => {
-  if (timeInTranslation < timeImported) {
-    return { text: 'Translated', variant: 'success' };
+export function GetStatusText(input:TranslationStatus|"mixed"|"")
+{
+  switch(input)
+  {
+    case "mixed":
+      return "mixed";
+    case "translated":
+      return "translated";
+    case "intranslation":
+      return "in translated";
+    default: 
+      return "";
   }
-  if (timeInTranslation > timeImported) {
-    return { text: 'In translation', variant: 'warning' };
-  }
-  return { text: '', variant: 'neutral' };
-};
-
-export const getCombinedStatus = (allStatuses: StatusInfo[]): StatusInfo => {
-  if (allStatuses.some((s) => s.text === 'In translation')) {
-    return { text: 'In translation', variant: 'warning' };
-  }
-  if (allStatuses.some((s) => s.text === 'Translated')) {
-    return { text: 'Translated', variant: 'success' };
-  }
-  return { text: '', variant: 'neutral' };
-};
+}

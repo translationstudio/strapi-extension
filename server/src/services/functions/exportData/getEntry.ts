@@ -101,16 +101,20 @@ const getEntry = async (
       populate: populateConfig,
     };
 
-    const entry = await strapi.documents(contentTypeID as any).findFirst(query);
+    const entry = await strapi.documents(contentTypeID as any).findOne(query);
     if (entry) {
-      strapi.log.info('Obtained ' + contentTypeID + '::' + entryID + ' in ' + locale);
+
+      if (entry.documentId !== entryID || entry.locale !== locale)
+        throw new Error("Document does not match. Ignoring this transation.");
+      
+      strapi.log.info('Obtained ' + contentTypeID + '/' + entryID + ' in ' + locale + " - result matches query.");
       return entry;
     }
   } catch (error) {
     strapi.log.error(error.message ?? error);
   }
 
-  strapi.log.warn('Could not find entry ' + entryID + ' in locale ' + locale);
+  strapi.log.warn('Could not find entry ' + entryID + ' of content type ' + contentTypeID + ' in locale ' + locale);
   return null;
 };
 

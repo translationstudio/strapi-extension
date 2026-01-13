@@ -97,7 +97,7 @@ const LanguageSelector = ({
         paddingBottom={2}
         style={{ color: themeColors.primaryText }}
       >
-        Languages / Connectors
+        Translation Options
       </Typography>
       {languages.map((lang) => (
         <Radio.Item key={lang.id} value={lang.name}>
@@ -515,6 +515,8 @@ const BulkTranslationPanel = ({
                   <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" fill="currentColor" />
                 </svg>
               }
+
+              style={{ height: "auto" }}
             >
               {getSubmitLabel(selectedEntries.length, isUrgent, isMachineTranslation)}
             </Button>

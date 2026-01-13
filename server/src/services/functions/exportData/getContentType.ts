@@ -83,7 +83,7 @@ export default function getContentType(contentTypeID: string):IStrapiSchema|null
         components: getComponentSchemata(contentType as IStrapiSchemaEntry)
     }
 
-    strapi.log.info("SChema loaded for " + contentTypeID + ". Component schemata loaded: " + Object.keys(res.components).length);
+    strapi.log.info("Schema loaded for " + contentTypeID + " - component schemata loaded: " + Object.keys(res.components).length);
     return res;
 };
 

@@ -34,6 +34,7 @@ import { useState, useMemo } from 'react';
 import { formatDate } from './utils/formatDate';
 import { groupHistoryData, GroupedHistoryItem } from './utils/historyDataUtils';
 import { handleHistoryResponse } from './utils/handleHistoryResponse';
+import { GetStatusText } from './utils/historyStatusUtils';
 
 const LoadingState = () => (
   <Box padding={4}>
@@ -84,16 +85,16 @@ const HistoryRow = ({ item }: { item: GroupedHistoryItem }) => (
   <Tr>
     <Td>
       <Typography variant="omega">
-        {item.targetLanguages.map((lang) => lang.toUpperCase()).join(', ')}
+        {item.targetLanguage}
       </Typography>
     </Td>
     <Td>
-      <Typography variant="omega">{formatDate(item['time-intranslation'])}</Typography>
+      <Typography variant="omega">{formatDate(item['timeUpdated'])}</Typography>
     </Td>
     <Td>
-      {item.combinedStatus.text && (
-        <Badge variant={item.combinedStatus.variant}>{item.combinedStatus.text}</Badge>
-      )}
+      <Typography variant="omega">
+        {GetStatusText(item.status)}
+      </Typography>
     </Td>
   </Tr>
 );

@@ -16,62 +16,50 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
 import { HistoryItem } from '../../../../Types';
-import { getHistoryStatus, getCombinedStatus, StatusInfo } from './historyStatusUtils';
+import { TranslationStatus } from './historyStatusUtils';
 
-export interface GroupedHistoryItem {
-  'element-uid': string;
-  'time-imported': number;
-  'time-intranslation': number;
-  targetLanguages: string[];
-  allStatuses: StatusInfo[];
-  latestTimeImported: number;
-  latestTimeInTranslation: number;
-  combinedStatus: StatusInfo;
+export type GroupedHistoryItem = {
+    "element-name": string;
+    'element-uid': string;
+    timeUpdated:number;
+    targetLanguage: string;
+    status: TranslationStatus;
+    id: string;
+}
+
+export function getElementStatus(elem:HistoryItem) : TranslationStatus
+{
+     if (elem['time-imported'] >= elem['time-intranslation'] && elem['time-imported'] >= elem['time-requested']) {
+        return 'translated';
+    }
+
+    if (elem['time-intranslation'] >= elem['time-imported'] && elem['time-intranslation'] >= elem['time-requested'])
+        return 'intranslation';
+
+    return "queued";
 }
 
 export const groupHistoryData = (historyData: HistoryItem[]): GroupedHistoryItem[] => {
-  if (!Array.isArray(historyData) || historyData.length === 0) return [];
+    
+    if (!Array.isArray(historyData) || historyData.length === 0) 
+        return [];
 
-  const grouped = historyData.reduce(
-    (acc, item) => {
-      const key = item['element-uid'];
+    const list:GroupedHistoryItem[] = [];
+    
+    for (const elem of historyData) {
+        const status = getElementStatus(elem);
 
-      if (!acc[key]) {
-        acc[key] = {
-          ...item,
-          targetLanguages: [item['target-language']],
-          allStatuses: [getHistoryStatus(item['time-intranslation'], item['time-imported'])],
-          latestTimeImported: item['time-imported'],
-          latestTimeInTranslation: item['time-intranslation'],
-        };
-      } else {
-        if (!acc[key].targetLanguages.includes(item['target-language'])) {
-          acc[key].targetLanguages.push(item['target-language']);
+        const val:GroupedHistoryItem = {
+            "element-name": elem['element-name'],
+            'element-uid': elem['element-uid'],
+            timeUpdated: elem['time-updated'],
+            targetLanguage: elem['target-language'],
+            status: status,
+            id: elem.id
         }
 
-        acc[key].allStatuses.push(
-          getHistoryStatus(item['time-intranslation'], item['time-imported'])
-        );
+        list.push(val);
+    }
 
-        if (item['time-imported'] > acc[key].latestTimeImported) {
-          acc[key].latestTimeImported = item['time-imported'];
-          acc[key]['time-imported'] = item['time-imported'];
-        }
-
-        if (item['time-intranslation'] > acc[key].latestTimeInTranslation) {
-          acc[key].latestTimeInTranslation = item['time-intranslation'];
-          acc[key]['time-intranslation'] = item['time-intranslation'];
-        }
-      }
-
-      return acc;
-    },
-    {} as Record<string, any>
-  );
-
-  return Object.values(grouped).map((item: any) => ({
-    ...item,
-    targetLanguages: item.targetLanguages.sort(),
-    combinedStatus: getCombinedStatus(item.allStatuses),
-  }));
+    return list;
 };

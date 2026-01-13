@@ -134,4 +134,12 @@ export default [
       policies: [],
     },
   },
+  {
+    method: 'POST',
+    path: '/history',
+    handler: 'controller.deleteHistory',
+    config: {
+      policies: [],
+    },
+  },
 ];
