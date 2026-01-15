@@ -15,17 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-import { HistoryItem } from '../../../../Types';
-import { TranslationStatus } from './historyStatusUtils';
-
-export type GroupedHistoryItem = {
-    "element-name": string;
-    'element-uid': string;
-    timeUpdated:number;
-    targetLanguage: string;
-    status: TranslationStatus;
-    id: string;
-}
+import { GroupedHistoryItem, HistoryItem, TranslationStatus } from '../../../../Types';
 
 export function getElementStatus(elem:HistoryItem) : TranslationStatus
 {

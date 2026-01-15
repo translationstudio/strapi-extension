@@ -27,15 +27,12 @@ import {
     Badge,
     TextInput,
 } from '@strapi/design-system';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { getFetchClient } from '@strapi/strapi/admin';
-import { HistoryItem } from '../../../Types';
 import { formatDate } from './utils/formatDate';
-import { groupHistoryData, GroupedHistoryItem } from './utils/historyDataUtils';
 import { getSearchableText, filterBySearchTerm } from './utils/searchUtils';
 import { SortField, SortState, sortItems, getNextSortState } from './utils/sortUtils';
 import { useDebounce } from './utils/useDebounce';
-import { handleHistoryResponse } from './utils/handleHistoryResponse';
 import { Bell, More } from '@strapi/icons';
 import { SimpleMenu } from '@strapi/design-system';
 import { MenuItem } from '@strapi/design-system';
@@ -44,14 +41,9 @@ import DeleteHistoryEntryRequest from './DeleteHistoryEntryRequest';
 import { GetStatusColor, GetStatusText } from './utils/historyStatusUtils';
 import { getThemeColors } from './utils/theme';
 import { Alert } from '@strapi/design-system';
+import { GroupedHistoryItem } from '../../../Types';
 
 const DEBOUNCE_DELAY = 500;
-
-const LoadingState = () => (
-    <Box padding={4}>
-        <Typography variant="beta">Loading history...</Typography>
-    </Box>
-);
 
 const EmptyState = ({ hasSearchTerm }: { hasSearchTerm: boolean }) => (
     <Box padding={4}>
@@ -214,10 +206,8 @@ const HistoryRow = ({ item, onDelete, secondaryColor }: { item: GroupedHistoryIt
     </Tr>
 );
 
-const HistoryMenu = () => {
-    const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+const HistoryMenu = ({ groupedHistoryData, onRemoveHistoryItem }: { groupedHistoryData:GroupedHistoryItem[], onRemoveHistoryItem:(id:string) => void }) => {
+
     const [errorMessage, setErrorMessage] = useState("");
     const [succcessMessage, setSucccessMessage] = useState("");
     const [searchTerm, setSearchTerm] = useState('');
@@ -227,44 +217,15 @@ const HistoryMenu = () => {
         direction: 'desc',
     });
 
-    const { get, post } = getFetchClient();
+    const { post } = getFetchClient();
     const themeColors = getThemeColors();
 
     const debouncedSearchTerm = useDebounce(searchTerm, DEBOUNCE_DELAY);
 
-    useEffect(() => {
-        const fetchHistory = async () => {
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                const response = await get('/translationstudio/history');
-                const result = handleHistoryResponse(response.data);
-                if (result.isError) {
-                    setError(result.errorMessage || 'Failed to fetch translation history.');
-                } else if (result.historyData && Array.isArray(result.historyData) && result.historyData.length > 0) {
-                    const res:HistoryItem[] = result.historyData;
-                    res.sort((a,b) => a['time-updated'] - b['time-updated'])
-                    setHistoryData(res);
-                }
-            } catch (error) {
-                console.error('Failed to fetch history:', error);
-                setError('Failed to fetch translation history.');
-                setHistoryData([]);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchHistory();
-    }, [setIsLoading, setError, setHistoryData]);
-
     const processedData = useMemo(() => {
-        const grouped = groupHistoryData(historyData);
-        const filtered = filterBySearchTerm(grouped, debouncedSearchTerm, getSearchableText);
-
+        const filtered = filterBySearchTerm(groupedHistoryData, debouncedSearchTerm, getSearchableText);
         return sortItems(filtered, sortState);
-    }, [historyData, debouncedSearchTerm, sortState]);
+    }, [groupedHistoryData, debouncedSearchTerm, sortState]);
 
     const handleSort = (field: SortField) => {
         setSortState((currentState) => getNextSortState(currentState, field));
@@ -273,45 +234,6 @@ const HistoryMenu = () => {
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
-
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
-    if (error) {
-        return (
-            <Box padding={4}>
-                <Typography variant="beta" textColor="danger600">
-                    {error}
-                </Typography>
-            </Box>
-        );
-    }
-
-    const removeHistoryEntry = function(item: GroupedHistoryItem)
-    {
-        if (!item || historyData.length === 0)
-            return;
-
-        if (historyData.length === 1)
-        {
-            setHistoryData([]);
-            return;
-        }
-
-        let index = -1;
-        for (let i = 0; i < historyData.length && index === -1; i++)
-        {
-            if (historyData[i].id === item.id)
-                index = i;
-        }
-
-        if (index === -1)
-            return;
-
-        historyData.splice(index, 1);
-        setHistoryData([...historyData]);
-    }
 
     const onDeleteHistoyInfo = function (elem: GroupedHistoryItem) {
 
@@ -329,7 +251,7 @@ const HistoryMenu = () => {
             if (res.status !== 204)
                 throw new Error("Could not delete entry");
 
-            removeHistoryEntry(deleteItem);
+            onRemoveHistoryItem(deleteItem.id);
             setSucccessMessage("Successfully removed history entry.");
         })
         .catch(() => setErrorMessage("Could not delete history entry " + deleteItem['element-name']))
@@ -345,7 +267,7 @@ const HistoryMenu = () => {
                 <EmptyState hasSearchTerm={false} />
             ) : (
                 <>
-                    {historyData.length > 10 && <SearchInput value={searchTerm} onChange={handleSearchChange} />}
+                    {groupedHistoryData.length > 10 && <SearchInput value={searchTerm} onChange={handleSearchChange} />}
                     {errorMessage && <Alert title={errorMessage}  variant="danger" style={{ marginBottom: "2em"}} >{errorMessage}</Alert>}
                     {succcessMessage && <Alert title={succcessMessage} variant="success" style={{ marginBottom: "2em"}} >{succcessMessage}</Alert>}
                     {hasData ? (

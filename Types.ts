@@ -167,6 +167,9 @@ export interface ImportPayload {
   }[];
 }
 
+export type HistoryDataMap = {
+  [id:string]:HistoryItem[]
+}
 export interface HistoryItem {
   'time-intranslation': number;
   'project-name': string;
@@ -176,6 +179,7 @@ export interface HistoryItem {
   'time-updated': number;
   'element-name': string;
   'time-requested': number;
+  'id': string;
 }
 
 export interface ContentType {
@@ -194,7 +198,7 @@ export interface Entry {
 }
 
 export interface BulkTranslationMenuProps {
-  historyData: HistoryItem[];
+  groupedHistoryData: GroupedHistoryItem[]
   isLoadingHistory: boolean;
   onTranslationComplete?: () => void;
 }
@@ -202,9 +206,21 @@ export interface BulkTranslationMenuProps {
 export interface BulkTranslationPanelProps {
   contentType: ContentType | undefined;
   selectedEntries: string[];
+  onClose: () => void;
   onTranslationComplete: () => void;
 }
 
 export interface EntryHistoryProps {
   entryUid?: string;
+}
+
+export type TranslationStatus = "translated" | "intranslation" | "queued";
+
+export type GroupedHistoryItem = {
+    "element-name": string;
+    'element-uid': string;
+    timeUpdated:number;
+    targetLanguage: string;
+    status: TranslationStatus;
+    id: string;
 }

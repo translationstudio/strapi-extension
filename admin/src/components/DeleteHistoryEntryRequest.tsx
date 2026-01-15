@@ -1,8 +1,8 @@
 
 import { Modal, Button } from "@strapi/design-system";
-import { GroupedHistoryItem } from "./utils/historyDataUtils";
 import { Typography } from "@strapi/design-system";
 import { Trash } from "@strapi/icons";
+import { GroupedHistoryItem } from "../../../Types";
 
 
 export default function DeleteHistoryEntryRequest({ item, onDeleted, onClose }: { item:GroupedHistoryItem, onClose:() => void, onDeleted:(item:GroupedHistoryItem) => void }) {

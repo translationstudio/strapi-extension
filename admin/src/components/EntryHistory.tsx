@@ -29,10 +29,10 @@ import {
   Badge,
 } from '@strapi/design-system';
 import { ChevronDown, ChevronUp } from '@strapi/icons';
-import { EntryHistoryProps, HistoryItem } from '../../../Types';
+import { EntryHistoryProps, GroupedHistoryItem, HistoryItem } from '../../../Types';
 import { useState, useMemo } from 'react';
 import { formatDate } from './utils/formatDate';
-import { groupHistoryData, GroupedHistoryItem } from './utils/historyDataUtils';
+import { groupHistoryData } from './utils/historyDataUtils';
 import { handleHistoryResponse } from './utils/handleHistoryResponse';
 import { GetStatusText } from './utils/historyStatusUtils';
 

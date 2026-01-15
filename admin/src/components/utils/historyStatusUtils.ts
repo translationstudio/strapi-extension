@@ -1,3 +1,5 @@
+import { TranslationStatus } from "../../../../Types";
+
 /*
 Strapi - translationstudio extension
 Copyright (C) 2025 I-D Media GmbH, idmedia.com
@@ -16,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
 export type StatusVariant = 'success' | 'warning' | 'neutral';
-
-export type TranslationStatus = "translated" | "intranslation" | "queued";
 
 export function GetStatusColor(input:TranslationStatus|"mixed"|""):StatusVariant
 {
@@ -42,6 +42,8 @@ export function GetStatusText(input:TranslationStatus|"mixed"|"")
       return "translated";
     case "intranslation":
       return "in translated";
+    case "queued":
+      return "queued";
     default: 
       return "";
   }

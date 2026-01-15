@@ -37,12 +37,12 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     },
     async getLicense(ctx) {
         const result = await strapi.plugin(APP_NAME).service('service').getLicense();
-        if (result.license) {
-            ctx.status = 200;
+        if (typeof result.license === "string") {
+            ctx.status = 204;
         } else {
             ctx.status = 404;
+            ctx.body = result;
         }
-        ctx.body = result;
     },
     async setLicense(ctx) {
         const license = ctx.request.body.license;
@@ -108,7 +108,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     },
     async getDevelopmentUrl(ctx) {
         const url = await strapi.plugin(APP_NAME).service('service').getDevelopmentUrl();
-        if (url) {
+        if (typeof url === "string") {
             ctx.status = 200;
             ctx.body = { url: url };
         } else {

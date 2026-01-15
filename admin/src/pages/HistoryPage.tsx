@@ -21,140 +21,179 @@ import { HistoryMenu } from '../components/HistoryMenu';
 import { BulkTranslationMenu } from '../components/BulkTranslationMenu';
 import { getFetchClient } from '@strapi/strapi/admin';
 
-import { HistoryDataMap, HistoryItem } from '../../../Types';
+import { GroupedHistoryItem, HistoryItem } from '../../../Types';
 import { handleHistoryResponse } from '../components/utils/handleHistoryResponse';
 import TranslationstudioLogo from '../components/TranslationstudioLogo';
+import { groupHistoryData } from '../components/utils/historyDataUtils';
 
-const processHistoryData = function(list:HistoryItem[])
-{
-  const map:HistoryDataMap = {};
-
-  for (const elem of list)
-  {
-    const id = elem['element-uid'].split("#");
-    if (id.length !== 2)
-      continue;
-    
-    if (!map[id[0]])
-      map[id[0]] = [elem];
-    else 
-      map[id[0]].push(elem);
-  }
-
-  return map;
+const TranslationstudioLogoBox = function() {
+    return <Box style={{ textAlign: 'right', width: '100%' }}>
+        <picture
+            style={{
+                width: '150px',
+                height: 'auto',
+                display: 'inline-block',
+            }}
+        >
+            <TranslationstudioLogo />
+        </picture>
+    </Box>
 }
 
+type PanelType = "bulk"|"history"
+
 const HistoryPage = () => {
-  const [historyData, setHistoryData] = useState<HistoryDataMap>({ });
+    const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
+    const [groupedHistoryData, setGroupedHistoryData] = useState<GroupedHistoryItem[]>([]);
+    const [lastUpdated, setLastUpdated] = useState(0);
 
-  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
-  const [activeTab, setActiveTab] = useState('history');
+    const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+    const [activeTab, setActiveTab] = useState<PanelType>('history');
 
-  const { get } = getFetchClient();
+    const { get } = getFetchClient();
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const response = await get('/translationstudio/history');
-        const result = handleHistoryResponse(response.data);
+    useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const response = await get('/translationstudio/history');
+                const result = handleHistoryResponse(response.data);
 
-        if (result.isError) 
-          throw new Error("Cold not fetch data");
-        
-        if (result.historyData && Array.isArray(result.historyData))
-          setHistoryData(processHistoryData(result.historyData));
-        
-      } catch (error) {
-        console.error('Failed to fetch history:', error);
-        setHistoryData({});
-      }
-      finally {
-        setIsLoadingHistory(false);
-      }
+                if (result.isError)
+                    throw new Error("Cold not fetch data");
+
+                if (result.historyData && Array.isArray(result.historyData)) {
+                    setHistoryData(result.historyData as HistoryItem[]);
+                    setGroupedHistoryData(groupHistoryData(result.historyData));
+                    setLastUpdated(Date.now());
+                }
+
+            } catch (error) {
+                console.error('Failed to fetch history:', error);
+                setHistoryData([]);
+                setGroupedHistoryData([]);
+            }
+            finally {
+                setIsLoadingHistory(false);
+            }
+        };
+        fetchHistory();
+    }, [setHistoryData, setIsLoadingHistory, setGroupedHistoryData, setLastUpdated]);
+
+    const refreshHistoryData = async () => {
+        setIsLoadingHistory(true);
+        try {
+            const response = await get('/translationstudio/history');
+            const result = handleHistoryResponse(response.data);
+
+            if (result.isError)
+            {
+                setGroupedHistoryData([]);
+                setHistoryData([]);
+            }
+            else if (result.historyData && Array.isArray(result.historyData)) {
+                setHistoryData(result.historyData as HistoryItem[]);
+                setGroupedHistoryData(groupHistoryData(result.historyData));
+                setLastUpdated(Date.now());
+            }
+        } catch (error) {
+            setHistoryData([]);
+            setGroupedHistoryData([]);
+        } finally {
+            setIsLoadingHistory(false);
+        }
     };
-    fetchHistory();
-  }, [setHistoryData, setIsLoadingHistory]);
 
-  const refreshHistoryData = async () => {
-    setIsLoadingHistory(true);
-    try {
-      const response = await get('/translationstudio/history');
-      const result = handleHistoryResponse(response.data);
-
-      if (result.isError) 
-        setHistoryData( {} );
-       else  if (result.historyData && Array.isArray(result.historyData))
-        setHistoryData(processHistoryData(result.historyData));
-
-    } catch (error) {
-      setHistoryData({ });
-    } finally {
-      setIsLoadingHistory(false);
+    const onRefreshHistoryClick = function()
+    {
+        if (Date.now() - lastUpdated > 1000 * 60 * 5)
+            refreshHistoryData();
     }
-  };
 
-  return (
-    <Main>
-      <Box padding={10} style={{ minHeight: '90vh', marginTop: '5vh' }}>
-        <Grid.Root>
-          {/* Logo */}
-          <Grid.Item xs={12}>
-            <Box style={{ textAlign: 'right', width: '100%' }}>
-              <picture
-                style={{
-                  width: '150px',
-                  height: 'auto',
-                  display: 'inline-block',
-                }}
-              >
-                <TranslationstudioLogo />
-              </picture>
+    const onChangePage = function(input:PanelType)
+    {
+        onRefreshHistoryClick();
+        setActiveTab(input);
+    }
+
+    const removeHistoryEntry = function(id:string)
+    {
+        if (!id || historyData.length === 0)
+            return;
+
+        if (historyData.length === 1)
+        {
+            setHistoryData([]);
+            return;
+        }
+
+        let index = -1;
+        for (let i = 0; i < historyData.length && index === -1; i++)
+        {
+            if (historyData[i].id === id)
+                index = i;
+        }
+
+        if (index === -1)
+            return;
+
+        historyData.splice(index, 1);
+
+        const res = [...historyData];
+        setHistoryData(res);
+        setGroupedHistoryData(groupHistoryData(res));
+    }
+
+    return (
+        <Main>
+            <Box padding={10} style={{ minHeight: '90vh', marginTop: '5vh' }}>
+                <Grid.Root>
+                    <Grid.Item xs={12}>
+                        <TranslationstudioLogoBox />
+                    </Grid.Item>
+
+                    {/* Toggle Buttons */}
+                    <Grid.Item xs={12}>
+                        <Box paddingBottom={4}>
+                            <Flex gap={2}>
+                                <Button
+                                    variant={activeTab === 'history' ? "default" : "tertiary"}
+                                    disabled={isLoadingHistory}
+                                    onClick={() => onChangePage('history')}
+                                >
+                                    Translation History
+                                </Button>
+                                <Button
+                                    variant={activeTab === 'bulk' ? "default" : "tertiary"}
+                                    disabled={isLoadingHistory}
+                                    onClick={() => onChangePage('bulk')}
+                                >
+                                    Translate multiple entries
+                                </Button>
+                            </Flex>
+                        </Box>
+                    </Grid.Item>
+
+                    {/* Content */}
+                    <Grid.Item xs={12}>
+                        {activeTab === 'bulk' && (
+                            <BulkTranslationMenu
+                                groupedHistoryData={groupedHistoryData}
+                                isLoadingHistory={isLoadingHistory}
+                                onTranslationComplete={refreshHistoryData}
+                            />
+                        )}
+
+                        {activeTab === 'history' && (
+                            <HistoryMenu
+                                groupedHistoryData={groupedHistoryData}
+                                onRemoveHistoryItem={(id) => removeHistoryEntry(id)}
+                             />
+                        )}
+                    </Grid.Item>
+                </Grid.Root>
             </Box>
-          </Grid.Item>
-
-          {/* Toggle Buttons */}
-          <Grid.Item xs={12}>
-            <Box paddingBottom={4}>
-              <Flex gap={2}>
-                <Button
-                  variant={activeTab === 'history' ? "default" : "tertiary"}
-                  onClick={() => setActiveTab('history')}
-                >
-                  Translation History
-                </Button>
-                <Button
-                  variant={activeTab === 'bulk' ? "default" : "tertiary"}
-                  onClick={() => setActiveTab('bulk')}
-                >
-                  Translate multiple entries
-                </Button>
-              </Flex>
-            </Box>
-          </Grid.Item>
-
-          {/* Content */}
-          <Grid.Item xs={12}>
-            {activeTab === 'bulk' && (
-              <BulkTranslationMenu
-                historyData={historyData}
-                isLoadingHistory={isLoadingHistory}
-                onTranslationComplete={refreshHistoryData}
-              />
-            )}
-
-            {activeTab === 'history' && (
-              <HistoryMenu
-                // @ts-ignore
-                historyData={historyData}
-                isLoadingHistory={isLoadingHistory}
-                onRefresh={refreshHistoryData}
-              />
-            )}
-          </Grid.Item>
-        </Grid.Root>
-      </Box>
-    </Main>
-  );
+        </Main>
+    );
 };
 
 export { HistoryPage };

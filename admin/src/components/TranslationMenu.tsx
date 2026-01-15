@@ -40,6 +40,7 @@ import { createSuccessMessage, createErrorMessage, AlertType } from './utils/ale
 import { determineEntryName, createEntryUid } from './utils/entryUtils';
 import { LoadingSpinner, ErrorMessage } from './LoadingSpinner';
 import TranslationstudioLogo from './TranslationstudioLogo';
+import { PaperPlane } from '@strapi/icons';
 
 const LanguageSelector = ({
   languages,
@@ -194,8 +195,7 @@ const TranslationMenu = () => {
 
     get('/translationstudio/getLicense')
       .then((response) => {
-        if (typeof response.data.license !== 'string') return false;
-        return response.data.license !== '';
+        return response.status === 204;
       })
       .then((hasLicense) => {
         setLicenseValid(hasLicense);
@@ -382,17 +382,7 @@ const TranslationMenu = () => {
         fullWidth
         onClick={handleTranslationRequest}
         disabled={!selectedOption}
-        startIcon={
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" fill="currentColor" />
-          </svg>
-        }
+        startIcon={<PaperPlane />}
       >
         {getSubmitLabel(1, isUrgent, isMachineTranslation)}
       </Button>
