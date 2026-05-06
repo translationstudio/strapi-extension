@@ -1,7 +1,7 @@
 {
   "name": "@translationstudio/translationstudio-strapi-extension",
   "description": "translationstudio extension for strapi",
-  "license": "GPL-2.0-only",
+  "license": "MIT",
   "author": "Duncan Leininger <duncan.leininger@idmedia.com>",
   "contributors": [
     {
@@ -10,7 +10,7 @@
     }
   ],
   "homepage": "https://translationstudio.tech",
-  "version": "5.0.1",
+  "version": "6.0.0",
   "keywords": [
     "translationstudio",
     "strapi",
