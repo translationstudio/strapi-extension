@@ -2,8 +2,12 @@
   "name": "@translationstudio/translationstudio-strapi-extension",
   "description": "translationstudio extension for strapi",
   "license": "MIT",
-  "author": "Duncan Leininger <duncan.leininger@idmedia.com>",
+  "author": "I-D Media GmbH",
   "contributors": [
+    {
+      "name": "Duncan Leininger",
+      "email": "duncan.leininger@idmedia.com"
+    },
     {
       "name": "Phillip Austerfield",
       "email": "phillip.austerfield@idmedia.com"
