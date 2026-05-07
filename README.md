@@ -41,7 +41,7 @@ Once the plugin is installed, navigate to `translationstudio settings`  in Strap
 6. Click on save
 
 > [!TIP]
-> If you have not yet configured your translation service providers, now is the tine.
+> If you have not yet configured your translation service providers, now is the time.
 
 Finally, create translation options for your editors and save your changes again.
 
